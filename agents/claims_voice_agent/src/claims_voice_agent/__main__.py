@@ -3,9 +3,11 @@ import base64
 import json
 import warnings
 
+from agenticlayer.agent_to_a2a import to_a2a
 from dotenv import load_dotenv
-from fastapi import FastAPI, WebSocket
-from fastapi.responses import RedirectResponse
+from starlette.responses import RedirectResponse
+from starlette.websockets import WebSocket
+from starlette.routing import Route, WebSocketRoute
 from google.adk.agents import LiveRequestQueue
 from google.adk.agents.run_config import RunConfig, StreamingMode
 from google.adk.events.event import Event
@@ -156,21 +158,19 @@ async def client_to_agent_messaging(websocket, live_request_queue):
 
 
 #
-# FastAPI web app
+# Web app - use A2A as base and add custom routes
 #
 
-app = FastAPI()
-
-
-@app.get("/")
-async def root():
+async def root_endpoint(request):
     """Redirect to the frontend service"""
     return RedirectResponse(url="http://localhost:8080")
 
 
-@app.websocket("/ws/{user_id}")
-async def websocket_endpoint(websocket: WebSocket, user_id: int, is_audio: str = "false"):
+async def websocket_endpoint(websocket: WebSocket):
     """Client websocket endpoint"""
+    # Get query params
+    user_id = websocket.path_params.get("user_id")
+    is_audio = websocket.query_params.get("is_audio", "false")
 
     # Wait for client connection
     await websocket.accept()
@@ -195,10 +195,17 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int, is_audio: str =
     print(f"Client #{user_id} disconnected")
 
 
+# Create A2A app and add custom routes
+app = to_a2a(root_agent)
+app.routes.insert(0, Route("/", root_endpoint))
+app.routes.insert(1, WebSocketRoute("/ws/{user_id}", websocket_endpoint))
+
+
 def main():
     """Main entry point for the agent"""
     import uvicorn
 
+    # Run the Starlette app (which includes both A2A and custom routes)
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
 

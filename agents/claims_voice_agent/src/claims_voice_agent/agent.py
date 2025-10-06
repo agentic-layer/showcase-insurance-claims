@@ -10,10 +10,35 @@ from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
 from google.genai import types
 
 
-def get_instruction(_: ReadonlyContext) -> str:
-    now = datetime.now(tz=ZoneInfo("Europe/Berlin"))
-    current_date_str = now.strftime("%A - %d.%m.%Y, %H:%M Uhr, %Z")
-    return f"""
+# Create MCP toolset for claims tools
+customer_database_toolset = MCPToolset(
+    connection_params=StreamableHTTPConnectionParams(
+        url="http://mcp-customer-database:8000/mcp/",
+    ),
+)
+
+
+def send_message(claim_data: str) -> dict:
+    """Send claim data to process it further."""
+    logging.log(logging.INFO, "Sending claim data: {}".format(claim_data))
+    return {
+        "status": "success",
+        "message": "Claim data has been successfully submitted to the claims processing team.",
+        "data_preview": claim_data[:100] + "..." if len(claim_data) > 100 else claim_data,
+    }
+
+
+root_agent = Agent(
+    # model="gemini-2.0-flash-exp",
+    # model="gemini-2.0-flash-live-001",
+    # model="gemini-live-2.5-flash-preview",
+    # model="gemini-2.5-flash-live-preview",
+    # model="gemini-2.5-flash-preview-native-audio-dialog",
+    # model="gemini-2.5-flash-exp-native-audio-thinking-dialog", # should not be used for real time conversations as it has a really high latency
+    model="gemini-2.5-flash-native-audio-latest",
+    # model="gemini-2.5-flash-native-audio-preview-09-2025",
+    name="claims_voice_agent",
+    instruction=f"""
         # Insurance Claims Agent - Strict Protocol
 
         You are a professional insurance claims specialist following a strict systematic protocol. Handle each claim step-by-step in the exact order specified.
@@ -53,7 +78,7 @@ def get_instruction(_: ReadonlyContext) -> str:
         6. **Incident Date/Time**
            - Ask when incident occurred
            - If relative date ("gestern", "vorgestern"): use current date to calculate
-           - Current date is: {current_date_str}
+           - Current date is: {datetime.now(tz=ZoneInfo("Europe/Berlin")).strftime("%A - %d.%m.%Y, %H:%M Uhr, %Z")}
            - Validate date is not in the future (date as well as time, e.g. if it is 10 am the incident can't happen at 4 pm at the same day) - if future date, ask for clarification
            - ONLY repeat calculated dates: "Verstanden, den [specific date]"
 
@@ -118,39 +143,8 @@ def get_instruction(_: ReadonlyContext) -> str:
         **Standard flow:**
         Caller: "M-AB-1234"
         Agent: "Kennzeichen M-AB-1234. Notiert. Wann ist der Unfall passiert?"
-    """
-
-
-# Create MCP toolset for claims tools
-customer_database_toolset = MCPToolset(
-    connection_params=StreamableHTTPConnectionParams(
-        url="http://mcp-customer-database:8000/mcp/",
-    ),
-)
-
-
-def send_message(claim_data: str) -> dict:
-    """Send claim data to process it further."""
-    logging.log(logging.INFO, "Sending claim data: {}".format(claim_data))
-    return {
-        "status": "success",
-        "message": "Claim data has been successfully submitted to the claims processing team.",
-        "data_preview": claim_data[:100] + "..." if len(claim_data) > 100 else claim_data,
-    }
-
-
-root_agent = Agent(
-    # model="gemini-2.0-flash-exp",
-    # model="gemini-2.0-flash-live-001",
-    # model="gemini-live-2.5-flash-preview",
-    # model="gemini-2.5-flash-live-preview",
-    # model="gemini-2.5-flash-preview-native-audio-dialog",
-    # model="gemini-2.5-flash-exp-native-audio-thinking-dialog", # should not be used for real time conversations as it has a really high latency
-    model="gemini-2.5-flash-native-audio-latest",
-    # model="gemini-2.5-flash-native-audio-preview-09-2025",
-    name="claims_voice_agent",
-    instruction=get_instruction,
-    description="",
+    """,
+    description="Voice-enabled insurance claims agent that helps customers file insurance claims through natural conversation in German",
     tools=[
         customer_database_toolset,
         send_message,
