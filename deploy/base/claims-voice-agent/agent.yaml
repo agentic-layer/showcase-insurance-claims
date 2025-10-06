@@ -9,10 +9,7 @@ spec:
   protocols:
     - type: A2A
       port: 8000
-      path: "/"
     - type: OpenAI
-      port: 8001
-      path: "/v1"
   env:
     - name: OTEL_SERVICE_NAME
       value: insurance-host-agent
