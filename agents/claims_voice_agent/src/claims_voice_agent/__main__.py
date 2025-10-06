@@ -3,11 +3,8 @@ import base64
 import json
 import warnings
 
-from agenticlayer.agent_to_a2a import to_a2a
+from agenticlayer.agent_to_a2a import to_a2a  # type: ignore[import-untyped]
 from dotenv import load_dotenv
-from starlette.responses import RedirectResponse
-from starlette.websockets import WebSocket
-from starlette.routing import Route, WebSocketRoute
 from google.adk.agents import LiveRequestQueue
 from google.adk.agents.run_config import RunConfig, StreamingMode
 from google.adk.events.event import Event
@@ -18,6 +15,9 @@ from google.genai.types import (
     Content,
     Part,
 )
+from starlette.responses import RedirectResponse
+from starlette.routing import Route, WebSocketRoute
+from starlette.websockets import WebSocket
 
 from .agent import root_agent
 
@@ -160,6 +160,7 @@ async def client_to_agent_messaging(websocket, live_request_queue):
 #
 # Web app - use A2A as base and add custom routes
 #
+
 
 async def root_endpoint(request):
     """Redirect to the frontend service"""

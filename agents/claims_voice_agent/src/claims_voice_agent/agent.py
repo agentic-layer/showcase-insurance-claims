@@ -3,12 +3,10 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from google.adk.agents import Agent
-from google.adk.agents.readonly_context import ReadonlyContext
 from google.adk.planners.built_in_planner import BuiltInPlanner
 from google.adk.tools.mcp_tool.mcp_session_manager import StreamableHTTPConnectionParams
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
 from google.genai import types
-
 
 # Create MCP toolset for claims tools
 customer_database_toolset = MCPToolset(
@@ -46,7 +44,7 @@ root_agent = Agent(
         **IMPORTANT: All communication must be in German.**
 
         ## PROTOCOL - Follow this sequence:
-        
+
         Note: You are allowed to skip one step (or part of it) or switch up your text if the information was already provided by the caller and you would ask redundant questions. Try to use any information they provide
         Note: If you only receive partial information in a step (e.g. only the date but not the time), acknowledge what you got and then ask for the missing part
 
@@ -57,7 +55,7 @@ root_agent = Agent(
            - Ask for name
            - If the name is provided in the greeting, extract and use it directly
            - ONLY repeat: "Danke, [Name]" and move to step 3
-           
+
         3. **Get User Data**
            - Use get_user_data(name) to retrieve customer data
            - Use the name from step 2
