@@ -1,0 +1,5 @@
+cask "google-cloud-sdk"
+brew "uv"
+brew "go-task"
+brew "pre-commit"
+brew "tilt"

@@ -1,0 +1,105 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 210 100% 6%;     /* Dark navy blue #0A192F */
+    --foreground: 0 0% 100%;       /* White text */
+
+    --card: 210 85% 8%;            /* Slightly lighter than background */
+    --card-foreground: 0 0% 100%;
+
+    --popover: 210 85% 8%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 191 100% 60%;       /* Cyan accent #00BFFF */
+    --primary-foreground: 210 100% 6%;
+
+    --secondary: 210 50% 15%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 210 50% 12%;
+    --muted-foreground: 210 20% 70%;
+
+    --accent: 191 100% 60%;        /* Cyan accent */
+    --accent-foreground: 210 100% 6%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 50% 20%;
+    --input: 210 50% 15%;
+    --ring: 191 100% 60%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 210 100% 4%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 191 100% 60%;
+    --sidebar-primary-foreground: 210 100% 6%;
+    --sidebar-accent: 210 50% 12%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 210 50% 20%;
+    --sidebar-ring: 191 100% 60%;
+  }
+
+  .dark {
+    --background: 210 100% 6%;
+    --foreground: 0 0% 100%;
+
+    --card: 210 85% 8%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 210 85% 8%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 191 100% 60%;
+    --primary-foreground: 210 100% 6%;
+
+    --secondary: 210 50% 15%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 210 50% 12%;
+    --muted-foreground: 210 20% 70%;
+
+    --accent: 191 100% 60%;
+    --accent-foreground: 210 100% 6%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 50% 20%;
+    --input: 210 50% 15%;
+    --ring: 191 100% 60%;
+    --sidebar-background: 210 100% 4%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 191 100% 60%;
+    --sidebar-primary-foreground: 210 100% 6%;
+    --sidebar-accent: 210 50% 12%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 210 50% 20%;
+    --sidebar-ring: 191 100% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-spartan;
+  }
+}
+
+/* ElevenLabs Conversational AI Widget Styling */
+elevenlabs-convai {
+  --primary-color: #030e4b;
+  --secondary-color: #0a71fa;
+}

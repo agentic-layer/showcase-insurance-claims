@@ -1,0 +1,75 @@
+#
+# GitHub Action: Check
+#
+# This workflow is triggered on pushes to main and renovate branches, as well as
+# pull requests. It runs backend checks and validates Docker builds without
+# pushing images to ensure code quality.
+#
+name: Check
+
+on:
+  push:
+    branches:
+      - main
+      - 'renovate/**'
+  pull_request:
+
+jobs:
+  check-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: 'actions/checkout@v5'
+
+      - name: Install uv
+        uses: 'astral-sh/setup-uv@v6'
+        with:
+          version: "0.8.17"
+          enable-cache: true
+
+      - name: Setup Python
+        uses: 'actions/setup-python@v6'
+        with:
+          python-version-file: ".python-version"
+
+      - name: Install Dependencies
+        run: uv sync --all-packages
+
+      - name: Run checks
+        run: uv run poe check
+
+  build-images:
+    needs: check-backend
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    strategy:
+      fail-fast: false # Ensures that if one build fails, the others will still run
+      matrix:
+        include:
+        # Agent builds
+        - image_name: claims_voice_agent
+          dockerfile: agents/Dockerfile
+          build_arg_key: AGENT_NAME
+        # MCP server builds
+        - image_name: customer_database
+          dockerfile: mcp-servers/Dockerfile
+          build_arg_key: MCP_SERVER_NAME
+        # Frontend build
+        - image_name: showcase-claims-frontend
+          dockerfile: frontend/Dockerfile
+          build_arg_key: "" # No build arg needed for frontend
+    steps:
+      - name: 'Checkout'
+        uses: 'actions/checkout@v5'
+        with:
+          fetch-depth: 0 # required to fetch all history for all branches and tags
+
+      - name: 'Build Docker Image'
+        uses: ./.github/actions/docker-build
+        with:
+          image_name: ${{ matrix.image_name }}
+          dockerfile: ${{ matrix.dockerfile }}
+          build_arg_key: ${{ matrix.build_arg_key }}

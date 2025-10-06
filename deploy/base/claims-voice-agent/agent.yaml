@@ -1,0 +1,27 @@
+apiVersion: runtime.agentic-layer.ai/v1alpha1
+kind: Agent
+metadata:
+  name: claims-voice-agent
+  namespace: showcase-insurance-claims
+spec:
+  replicas: 1
+  image: claims_voice_agent:latest
+  protocols:
+    - type: A2A
+      port: 8000
+      path: "/"
+    - type: OpenAI
+      port: 8001
+      path: "/v1"
+  env:
+    - name: OTEL_SERVICE_NAME
+      value: insurance-host-agent
+    - name: GOOGLE_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: api-key-secrets
+          key: GEMINI_API_KEY
+  envFrom:
+    - configMapRef:
+        name: otel-tempo-config
+        optional: true

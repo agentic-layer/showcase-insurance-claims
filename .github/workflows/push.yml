@@ -1,0 +1,75 @@
+#
+# GitHub Action: Push
+#
+# This workflow automates the building and publishing of Docker images for
+# ADK agents and MCP servers to Google Cloud Artifact Registry when code
+# is pushed to the main branch.
+#
+name: Push
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  publish-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    strategy:
+      fail-fast: false # Ensures that if one build fails, the others will still run
+      matrix:
+        include:
+        # Agent builds
+        - image_name: claims_voice_agent
+          dockerfile: agents/Dockerfile
+          build_arg_key: AGENT_NAME
+        # MCP server builds
+        - image_name: customer_database
+          dockerfile: mcp-servers/Dockerfile
+          build_arg_key: MCP_SERVER_NAME
+        # Frontend build
+        - image_name: showcase-claims-frontend
+          dockerfile: frontend/Dockerfile
+          build_arg_key: "" # No build arg needed for frontend
+
+    steps:
+      - name: 'Checkout'
+        uses: 'actions/checkout@v5'
+        with:
+          fetch-depth: 0 # required to fetch all history for all branches and tags
+
+      - name: 'Generate Image Tag'
+        id: 'tag'
+        run: |
+          # Generate branch-sha-timestamp format
+          GIT_BRANCH="${{ github.ref_name }}"
+          GIT_SHA="${{ github.sha }}"
+          IMAGE_TAG="${GIT_BRANCH}-${GIT_SHA:0:7}-$(date +%s)"
+          echo "tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "Generated Tag: $IMAGE_TAG"
+
+      - name: 'Build Docker Image'
+        id: 'build'
+        uses: ./.github/actions/docker-build
+        with:
+          image_name: ${{ matrix.image_name }}
+          dockerfile: ${{ matrix.dockerfile }}
+          build_arg_key: ${{ matrix.build_arg_key }}
+          image_tag: ${{ steps.tag.outputs.tag }}
+
+      - name: 'Authenticate to Google Cloud'
+        id: 'auth'
+        uses: 'google-github-actions/auth@v3'
+        with:
+          project_id: 'qaware-paal'
+          workload_identity_provider: 'projects/387309373030/locations/global/workloadIdentityPools/github-actions-identity-pool/providers/github-actions-provider'
+          service_account: 'sa-github-actions@qaware-paal.iam.gserviceaccount.com'
+
+      - name: 'Configure Docker for Artifact Registry'
+        run: gcloud auth configure-docker europe-west3-docker.pkg.dev
+
+      - name: 'Push Docker Image'
+        run: docker push ${{ steps.build.outputs.image-name }}

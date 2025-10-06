@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: showcase-insurance-claims
+  name: showcase-claims-frontend
+  labels:
+    app: showcase-claims-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: showcase-claims-frontend
+  template:
+    metadata:
+      labels:
+        app: showcase-claims-frontend
+    spec:
+      # The init container now only waits for the claims-voice-agent service.
+      initContainers:
+        - name: wait-for-services
+          image: busybox:1.28
+          command:
+            [
+              "sh",
+              "-c",
+              "until nslookup claims-voice-agent.showcase-insurance-claims.svc.cluster.local; do echo 'waiting for voice agent service...'; sleep 2; done;",
+            ]
+      containers:
+        - name: showcase-claims-frontend
+          image: showcase-claims-frontend:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: NGINX_PORT
+              value: "80"
+            - name: FRAME_OPTIONS
+              value: "SAMEORIGIN"
+            # The URL for the WebSocket backend
+            - name: WEBSOCKET_URL
+              value: "http://claims-voice-agent.showcase-insurance-claims.svc.cluster.local:8000"
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: showcase-insurance-claims
+  name: showcase-claims-frontend
+spec:
+  selector:
+    app: showcase-claims-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+

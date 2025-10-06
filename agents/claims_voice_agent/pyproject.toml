@@ -1,0 +1,22 @@
+[project]
+name = "claims-voice-agent"
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "base",
+    "openinference-instrumentation-google-adk>=0.1.4",
+    "opentelemetry-exporter-otlp>=1.37.0",
+    "opentelemetry-instrumentation-fastapi>=0.58b0",
+    "opentelemetry-sdk>=1.37.0",
+]
+
+[tool.uv.sources]
+base = { workspace = true }
+
+[project.scripts]
+claims_voice_agent = "claims_voice_agent.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
