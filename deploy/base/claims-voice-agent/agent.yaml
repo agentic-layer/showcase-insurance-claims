@@ -8,9 +8,7 @@ spec:
   image: claims_voice_agent:latest
   protocols:
     - type: A2A
-      port: 8000
-    - type: OpenAI
-      port: 8001
+      name: a2a-8000
   env:
     - name: OTEL_SERVICE_NAME
       value: insurance-host-agent
