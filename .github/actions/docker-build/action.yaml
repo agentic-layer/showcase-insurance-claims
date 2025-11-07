@@ -25,6 +25,11 @@ inputs:
     required: false
     type: string
     default: latest
+  docker_context:
+    description: 'Path to the Docker build context'
+    required: false
+    type: string
+    default: '.'
 
 outputs:
   image-name:
@@ -38,7 +43,7 @@ runs:
       if: ${{ inputs.build_arg_key != '' }}
       uses: 'docker/build-push-action@v6'
       with:
-        context: .
+        context: ${{ inputs.docker_context }}
         file: ${{ inputs.dockerfile }}
         push: false
         load: true   # Load image into local Docker daemon for potential pushing
@@ -50,7 +55,7 @@ runs:
       if: ${{ inputs.build_arg_key == '' }}
       uses: 'docker/build-push-action@v6'
       with:
-        context: .
+        context: ${{ inputs.docker_context }}
         file: ${{ inputs.dockerfile }}
         push: false
         load: true   # Load image into local Docker daemon for potential pushing
