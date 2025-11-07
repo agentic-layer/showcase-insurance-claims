@@ -36,7 +36,6 @@ jobs:
         - image_name: showcase-claims-frontend
           dockerfile: frontend/Dockerfile
           build_arg_key: "" # No build arg needed for frontend
-          docker_context: frontend/
 
     steps:
       - name: 'Checkout'
