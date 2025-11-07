@@ -79,7 +79,8 @@ for server in mcp_servers:
 # Frontend deployment
 docker_build(
     'showcase-claims-frontend',
-    context='./frontend',
+    context='.',
+    dockerfile='./frontend/Dockerfile',
 )
 
 # Port forwarding for frontend
