@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: customer-database
-  namespace: showcase-insurance-claims
 spec:
   replicas: 1
   selector:
@@ -17,13 +16,13 @@ spec:
       - name: customer-database
         image: customer_database:latest
         ports:
-        - containerPort: 8001
+        - containerPort: 8000
           name: http
         env:
         - name: HOST
           value: "0.0.0.0"
         - name: PORT
-          value: "8001"
+          value: "8000"
         resources:
           requests:
             memory: "128Mi"
@@ -43,5 +42,5 @@ spec:
   ports:
   - name: http
     port: 8000
-    targetPort: 8001
+    targetPort: 8000
   type: ClusterIP

@@ -2,7 +2,6 @@ apiVersion: runtime.agentic-layer.ai/v1alpha1
 kind: Agent
 metadata:
   name: claims-voice-agent
-  namespace: showcase-insurance-claims
 spec:
   replicas: 1
   image: claims_voice_agent:latest

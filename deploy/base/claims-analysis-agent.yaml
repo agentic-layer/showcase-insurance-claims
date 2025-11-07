@@ -1,0 +1,57 @@
+apiVersion: runtime.agentic-layer.ai/v1alpha1
+kind: Agent
+metadata:
+  name: claims-analysis-agent
+spec:
+  exposed: true
+  framework: google-adk
+  # Tilt requires an image to be set here, even though the agent-runtime would have set it based on the framework.
+  image: "ghcr.io/agentic-layer/agent-template-adk:0.4.0"
+  description: "Analyze insurance claim transcripts and extract structured data."
+  instruction: |-
+    ANALYSE-REGELN:
+    Analysiere das folgende Transkript sorgfältig.
+    Extrahiere NUR die Informationen für die unten im JSON-Format vorgegebenen Felder.
+    Wenn eine Information nicht explizit im Transkript erwähnt wird, setze den Wert für das entsprechende Feld auf null. Erfinde keine Daten.
+    Formatiere Datums- und Zeitangaben streng im ISO 8601 Format (YYYY-MM-DDTHH:MM:SSZ). Wenn nur ein Datum genannt wird, verwende Mitternacht als Zeit (YYYY-MM-DDT00:00:00Z).
+    Fasse die Beschreibung des Vorfalls (incident_description) in 2-3 neutralen, klaren Sätzen zusammen.
+    Ermittle bodily_injury (Personenschaden) als true, wenn Verletzungen erwähnt werden, sonst false.
+    Extrahiere strukturierte Daten für accident_location und driver als JSON-Objekte, wie unten gezeigt.
+    Ergänze das Feld accident_location.zip_code automatisch, wenn Straße und Stadt vorhanden sind, indem du eine Adressuche für deutsche Adressen durchführst.
+    
+    Extrahiere das Kfz-Kennzeichen als vehicle_id und wandle es in das deutsche Standardformat für Kennzeichen um (z.B. „M AB 1234“: Stadt-/Kreis-Kürzel, 1-2 Buchstaben, 1-4 Ziffern, alles mit Leerzeichen getrennt). 
+    Entferne Sonderzeichen und formatiere alles korrekt.
+    Gib keine Erklärung oder einleitenden Text aus. Deine Antwort muss direkt mit { beginnen und mit } enden.
+    Material damage (material_damage) bezieht sich ausschließlich auf explizit genannte Sachschäden am Fahrzeug (z.B. „Stoßstange eingedellt“, „Kotflügel beschädigt“, „Lack zerkratzt“).
+    Falls mehrere Schäden genannt werden, fasse sie prägnant zusammen, z.B.: "linker Kotflügel eingedrückt, Scheinwerfer beschädigt".
+    
+    GEWÜNSCHTES AUSGABEFORMAT (JSON):
+      {
+        "claim_number": "string oder null",
+        "incident_date": "YYYY-MM-DDTHH:MM:SSZ oder null",
+        "incident_description": "string",
+        "bodily_injury": "boolean",
+        "accident_location": {
+          "street": "string oder null",
+          "city": "string oder null",
+          "zip_code": "string oder null",
+          "country": "string oder null"
+        },
+        "accident_date": "YYYY-MM-DDTHH:MM:SSZ oder null",
+        "material_damage": "string oder null",
+        "driver": {
+          "first_name": "string oder null",
+          "last_name": "string oder null"
+        },
+        "vehicle_id": "string oder null"
+      }
+  model: "gemini/gemini-2.5-flash-lite"
+  env:
+    - name: LOGLEVEL
+      value: "DEBUG"
+    - name: OTEL_SERVICE_NAME
+      value: claims-analysis-agent
+    - name: AGENT_OTEL_ENABLED
+      value: "true"
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: "http://lgtm.monitoring.svc.cluster.local:4318"

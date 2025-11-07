@@ -1,7 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: showcase-insurance-claims
   name: showcase-claims-frontend
   labels:
     app: showcase-claims-frontend

@@ -60,7 +60,7 @@ def get_user_data(name: str) -> dict:
 
 def main():
     """Main entry point for the Claims Tools MCP server."""
-    mcp.run(transport="streamable-http", host="0.0.0.0", port=8001)
+    mcp.run(transport="streamable-http", host="0.0.0.0", port=8000)
 
 
 if __name__ == "__main__":
