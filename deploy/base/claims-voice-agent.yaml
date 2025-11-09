@@ -3,20 +3,12 @@ kind: Agent
 metadata:
   name: claims-voice-agent
 spec:
-  replicas: 1
   image: claims_voice_agent:latest
-  protocols:
-    - type: A2A
-      name: a2a-8000
   env:
     - name: OTEL_SERVICE_NAME
-      value: insurance-host-agent
+      value: claims-voice-agent
     - name: GOOGLE_API_KEY
       valueFrom:
         secretKeyRef:
           name: api-key-secrets
           key: GEMINI_API_KEY
-  envFrom:
-    - configMapRef:
-        name: otel-tempo-config
-        optional: true

@@ -39,52 +39,31 @@ k8s_resource('lgtm', port_forwards=['12000:3000'])
 k8s_resource('ai-gateway-litellm', port_forwards=['12001:4000'])
 k8s_resource('agent-gateway-krakend', port_forwards=['12002:8080'])
 k8s_resource('observability-dashboard', port_forwards=['12004:8000'])
-k8s_resource('claims-analysis-agent', port_forwards=['12011:8000'], labels=['agents'])
 
-# Define Agents and MCP Servers
-agents = [
-    {'name': 'claims_voice_agent', 'port': '12010:8000'},
-]
+k8s_resource('claims-analysis-agent', port_forwards=['12011:8000'], labels=['agents'], resource_deps=['agent-runtime'])
+k8s_resource('claims-voice-agent', port_forwards=['12010:8000'], labels=['agents'], resource_deps=['agent-runtime'])
+k8s_resource('customer-database', port_forwards=['12020:8000'], labels=['mcp-servers'])
+k8s_resource('showcase-claims-frontend', port_forwards='12030:80', labels=['frontend'])
 
-mcp_servers = [
-    {'name': 'customer_database', 'port': '12020:8000'},
-]
+docker_build(
+    'claims_voice_agent',
+    context='.',
+    dockerfile='./agents/Dockerfile',
+    build_args={'AGENT_NAME': 'claims_voice_agent'},
+)
 
-# Helper function to convert snake_case to kebab-case
-def snake_to_kebab(snake_str):
-    return snake_str.replace('_', '-')
+docker_build(
+    'customer_database',
+    context='.',
+    dockerfile='./mcp-servers/Dockerfile',
+    build_args={'MCP_SERVER_NAME': 'customer_database'},
+)
 
-# Open ports and sync changes to agents
-for agent in agents:
-    agent_name = agent['name']
-    docker_build(
-        agent_name,
-        context='.',
-        dockerfile='./agents/Dockerfile',
-        build_args={'AGENT_NAME': agent_name},
-    )
-    k8s_resource(snake_to_kebab(agent_name), port_forwards=agent['port'], labels=['agents'])
-
-# Open ports and sync changes to MCP servers
-for server in mcp_servers:
-    server_name = server['name']
-    docker_build(
-        server_name,
-        context='.',
-        dockerfile='./mcp-servers/Dockerfile',
-        build_args={'MCP_SERVER_NAME': server_name},
-    )
-    k8s_resource(snake_to_kebab(server_name), port_forwards=server['port'], labels=['mcp-servers'])
-
-# Frontend deployment
 docker_build(
     'showcase-claims-frontend',
     context='.',
     dockerfile='./frontend/Dockerfile',
 )
-
-# Port forwarding for frontend
-k8s_resource('showcase-claims-frontend', port_forwards='12030:80', labels=['frontend'])
 
 google_api_key = os.environ.get('GOOGLE_API_KEY', '')
 if not google_api_key:
