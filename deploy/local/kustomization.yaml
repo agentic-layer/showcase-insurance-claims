@@ -4,3 +4,4 @@ resources:
   - ../base
   - ./observability-dashboard
   - lgtm.yaml
+  - ./agentic-layer

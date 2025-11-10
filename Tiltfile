@@ -16,7 +16,7 @@ agent_runtime_install(version='0.9.0')
 
 v1alpha1.extension(name='ai-gateway-litellm', repo_name='agentic-layer', repo_path='ai-gateway-litellm')
 load('ext://ai-gateway-litellm', 'ai_gateway_litellm_install')
-ai_gateway_litellm_install(version='0.2.0')
+ai_gateway_litellm_install(version='0.2.0', instance=False)
 
 v1alpha1.extension(name='agent-gateway-krakend', repo_name='agentic-layer', repo_path='agent-gateway-krakend')
 load('ext://agent-gateway-krakend', 'agent_gateway_krakend_install')
@@ -67,14 +67,27 @@ docker_build(
 
 google_api_key = os.environ.get('GOOGLE_API_KEY', '')
 if not google_api_key:
-    fail('GOOGLE_API_KEY environment variable is required. Please set it in your shell or .env file.')
+    warn('GOOGLE_API_KEY environment variable is not set. Please set it in your shell or .env file.')
+
+openai_api_key = os.environ.get('OPENAI_API_KEY', '')
+if not openai_api_key:
+    warn('OPENAI_API_KEY environment variable is not set. Please set it in your shell or .env file.')
 
 # Create Kubernetes secrets from environment variables
 load('ext://secret', 'secret_from_dict')
 
+# Create secret for voice agent, which is not yet using the ai-gateway
 k8s_yaml(secret_from_dict(
     name = "api-key-secrets",
     namespace = "showcase-insurance-claims",
     # The ai-gateway expects the API key to be called <provider>_API_KEY
     inputs = { "GEMINI_API_KEY": google_api_key }
+))
+
+# Create secret for ai-gateway
+k8s_yaml(secret_from_dict(
+    name = "api-key-secrets",
+    namespace = "ai-gateway",
+    # The ai-gateway expects the API key to be called <provider>_API_KEY
+    inputs = { "GEMINI_API_KEY": google_api_key, "OPENAI_API_KEY": openai_api_key }
 ))
