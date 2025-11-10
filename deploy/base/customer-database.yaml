@@ -1,46 +1,9 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: runtime.agentic-layer.ai/v1alpha1
+kind: ToolServer
 metadata:
   name: customer-database
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: customer-database
-  template:
-    metadata:
-      labels:
-        app: customer-database
-    spec:
-      containers:
-      - name: customer-database
-        image: customer_database:latest
-        ports:
-        - containerPort: 8000
-          name: http
-        env:
-        - name: HOST
-          value: "0.0.0.0"
-        - name: PORT
-          value: "8000"
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "256Mi"
-            cpu: "500m"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mcp-customer-database
-  namespace: showcase-insurance-claims
-spec:
-  selector:
-    app: customer-database
-  ports:
-  - name: http
-    port: 8000
-    targetPort: 8000
-  type: ClusterIP
+  protocol: mcp
+  transportType: http
+  image: customer_database:latest
+  port: 8000
