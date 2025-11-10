@@ -25,9 +25,14 @@ spec:
     Material damage (material_damage) bezieht sich ausschließlich auf explizit genannte Sachschäden am Fahrzeug (z.B. „Stoßstange eingedellt“, „Kotflügel beschädigt“, „Lack zerkratzt“).
     Falls mehrere Schäden genannt werden, fasse sie prägnant zusammen, z.B.: "linker Kotflügel eingedrückt, Scheinwerfer beschädigt".
     
+    Kundendaten wie die customer_id und die policy_id sind über das Tool "get_user_data" abrufbar.
+    Falls diese Daten im Transkript nicht erwähnt werden, rufe das Tool auf, um die fehlenden Informationen zu erhalten.
+    
     GEWÜNSCHTES AUSGABEFORMAT (JSON):
       {
         "claim_number": "string oder null",
+        "customer_id": "string oder null",
+        "policy_id": "string oder null",
         "incident_date": "YYYY-MM-DDTHH:MM:SSZ oder null",
         "incident_description": "string",
         "bodily_injury": "boolean",
