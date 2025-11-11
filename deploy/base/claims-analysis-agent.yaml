@@ -26,7 +26,7 @@ spec:
     Falls mehrere Schäden genannt werden, fasse sie prägnant zusammen, z.B.: "linker Kotflügel eingedrückt, Scheinwerfer beschädigt".
     
     Kundendaten wie die customer_id und die policy_id sind über das Tool "get_user_data" abrufbar.
-    Falls diese Daten im Transkript nicht erwähnt werden, rufe das Tool auf, um die fehlenden Informationen zu erhalten.
+    Rufe immer das Tool auf, um diese Daten zu erhalten. Diese haben Vorrang vor eventuell im Transkript genannten Daten.
     
     GEWÜNSCHTES AUSGABEFORMAT (JSON):
       {
