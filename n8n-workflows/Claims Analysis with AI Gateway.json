@@ -1,0 +1,624 @@
+{
+  "name": "Claims Analysis with AI Gateway",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "claim-intake-trigger",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        -544
+      ],
+      "id": "e58e6fea-d64e-45f4-a341-35b50372ba19",
+      "name": "Phone call finished",
+      "webhookId": "d6f63bbc-b4d1-4251-b741-5dd262ce3d02",
+      "notes": "Dieser Node wartet auf eingehende POST-Anfragen an die generierte URL. Die im Body der Anfrage gesendeten Daten (z.B. die id des Transkripts) stehen dann im Workflow für die nächsten Schritte zur Verfügung."
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        816,
+        208
+      ],
+      "id": "16d2be3b-9a5b-46b6-94f9-1f8120437bfc",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "pZDjxZ49j5kDoL04",
+          "name": "AI Gateway"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "    ANALYSE-REGELN:\n    Analysiere das folgende Transkript sorgfältig.\n    Extrahiere NUR die Informationen für die unten im JSON-Format vorgegebenen Felder.\n    Wenn eine Information nicht explizit im Transkript erwähnt wird, setze den Wert für das entsprechende Feld auf null. Erfinde keine Daten.\n    Formatiere Datums- und Zeitangaben streng im ISO 8601 Format (YYYY-MM-DDTHH:MM:SSZ). Wenn nur ein Datum genannt wird, verwende Mitternacht als Zeit (YYYY-MM-DDT00:00:00Z).\n    Fasse die Beschreibung des Vorfalls (incident_description) in 2-3 neutralen, klaren Sätzen zusammen.\n    Ermittle bodily_injury (Personenschaden) als true, wenn Verletzungen erwähnt werden, sonst false.\n    Extrahiere strukturierte Daten für accident_location und driver als JSON-Objekte, wie unten gezeigt.\n    Ergänze das Feld accident_location.zip_code automatisch, wenn Straße und Stadt vorhanden sind, indem du eine Adressuche für deutsche Adressen durchführst.\n    \n    Extrahiere das Kfz-Kennzeichen als vehicle_id und wandle es in das deutsche Standardformat für Kennzeichen um (z.B. „M AB 1234“: Stadt-/Kreis-Kürzel, 1-2 Buchstaben, 1-4 Ziffern, alles mit Leerzeichen getrennt). \n    Entferne Sonderzeichen und formatiere alles korrekt.\n    Gib keine Erklärung oder einleitenden Text aus. Deine Antwort muss direkt mit { beginnen und mit } enden.\n    Material damage (material_damage) bezieht sich ausschließlich auf explizit genannte Sachschäden am Fahrzeug (z.B. „Stoßstange eingedellt“, „Kotflügel beschädigt“, „Lack zerkratzt“).\n    Falls mehrere Schäden genannt werden, fasse sie prägnant zusammen, z.B.: \"linker Kotflügel eingedrückt, Scheinwerfer beschädigt\".\n    \n    Kundendaten wie die customer_id und die policy_id sind über das Tool \"get_user_data\" abrufbar.\n    Falls diese Daten im Transkript nicht erwähnt werden, rufe das Tool auf, um die fehlenden Informationen zu erhalten.\n    \n    GEWÜNSCHTES AUSGABEFORMAT (JSON):\n    {\n      \"claim_number\": \"string oder null\",\n      \"customer_id\": \"string oder null\",\n      \"policy_id\": \"string oder null\",\n      \"incident_date\": \"YYYY-MM-DDTHH:MM:SSZ oder null\",\n      \"incident_description\": \"string\",\n      \"bodily_injury\": \"boolean\",\n      \"accident_location\": {\n        \"street\": \"string oder null\",\n        \"city\": \"string oder null\",\n        \"zip_code\": \"string oder null\",\n        \"country\": \"string oder null\"\n      },\n      \"accident_date\": \"YYYY-MM-DDTHH:MM:SSZ oder null\",\n      \"material_damage\": \"string oder null\",\n      \"driver\": {\n        \"first_name\": \"string oder null\",\n        \"last_name\": \"string oder null\"\n      },\n      \"vehicle_id\": \"string oder null\"\n    }",
+              "role": "system"
+            },
+            {
+              "content": "=Hier ist das zu analysierende Transkript:\n{{ $json.body.conversation_flow.full_conversation }}\n\n"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -656,
+        -544
+      ],
+      "id": "28af5279-148c-4ec4-a147-071b71552d78",
+      "name": "Claims Analysis (Simple node)",
+      "credentials": {
+        "openAiApi": {
+          "id": "pZDjxZ49j5kDoL04",
+          "name": "AI Gateway"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Hier ist das zu analysierende Transkript:\n{{ $json.body.conversation_flow.full_conversation }}\n\n",
+        "options": {
+          "systemMessage": "    ANALYSE-REGELN:\n    Analysiere das folgende Transkript sorgfältig.\n    Extrahiere NUR die Informationen für die unten im JSON-Format vorgegebenen Felder.\n    Wenn eine Information nicht explizit im Transkript erwähnt wird, setze den Wert für das entsprechende Feld auf null. Erfinde keine Daten.\n    Formatiere Datums- und Zeitangaben streng im ISO 8601 Format (YYYY-MM-DDTHH:MM:SSZ). Wenn nur ein Datum genannt wird, verwende Mitternacht als Zeit (YYYY-MM-DDT00:00:00Z).\n    Fasse die Beschreibung des Vorfalls (incident_description) in 2-3 neutralen, klaren Sätzen zusammen.\n    Ermittle bodily_injury (Personenschaden) als true, wenn Verletzungen erwähnt werden, sonst false.\n    Extrahiere strukturierte Daten für accident_location und driver als JSON-Objekte, wie unten gezeigt.\n    Ergänze das Feld accident_location.zip_code automatisch, wenn Straße und Stadt vorhanden sind, indem du eine Adressuche für deutsche Adressen durchführst.\n    \n    Extrahiere das Kfz-Kennzeichen als vehicle_id und wandle es in das deutsche Standardformat für Kennzeichen um (z.B. „M AB 1234“: Stadt-/Kreis-Kürzel, 1-2 Buchstaben, 1-4 Ziffern, alles mit Leerzeichen getrennt). \n    Entferne Sonderzeichen und formatiere alles korrekt.\n    Gib keine Erklärung oder einleitenden Text aus. Deine Antwort muss direkt mit { beginnen und mit } enden.\n    Material damage (material_damage) bezieht sich ausschließlich auf explizit genannte Sachschäden am Fahrzeug (z.B. „Stoßstange eingedellt“, „Kotflügel beschädigt“, „Lack zerkratzt“).\n    Falls mehrere Schäden genannt werden, fasse sie prägnant zusammen, z.B.: \"linker Kotflügel eingedrückt, Scheinwerfer beschädigt\".\n    \n    Kundendaten wie die customer_id und die policy_id sind über das Tool \"get_user_data\" abrufbar.\n    Falls diese Daten im Transkript nicht erwähnt werden, rufe das Tool auf, um die fehlenden Informationen zu erhalten.\n    \n    GEWÜNSCHTES AUSGABEFORMAT (JSON):\n    {\n      \"claim_number\": \"string oder null\",\n      \"customer_id\": \"string oder null\",\n      \"policy_id\": \"string oder null\",\n      \"incident_date\": \"YYYY-MM-DDTHH:MM:SSZ oder null\",\n      \"incident_description\": \"string\",\n      \"bodily_injury\": \"boolean\",\n      \"accident_location\": {\n        \"street\": \"string oder null\",\n        \"city\": \"string oder null\",\n        \"zip_code\": \"string oder null\",\n        \"country\": \"string oder null\"\n      },\n      \"accident_date\": \"YYYY-MM-DDTHH:MM:SSZ oder null\",\n      \"material_damage\": \"string oder null\",\n      \"driver\": {\n        \"first_name\": \"string oder null\",\n        \"last_name\": \"string oder null\"\n      },\n      \"vehicle_id\": \"string oder null\"\n    }"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        816,
+        -96
+      ],
+      "id": "b3c5b816-cac2-4856-ae4e-8724f0e7e117",
+      "name": "Claims Analysis"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://localhost:12020/mcp",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.2,
+      "position": [
+        960,
+        208
+      ],
+      "id": "470440b5-796f-4c15-95a2-3f68c14291eb",
+      "name": "MCP Client"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fa3f3df7-8940-4ddb-8881-3702dac5fa40",
+              "name": "message.content",
+              "value": "={{ $json.message.content }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        32,
+        -544
+      ],
+      "id": "f1f8847e-35af-4333-b9b7-44637858c6d5",
+      "name": "Store claim data"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://localhost:12020/mcp",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.2,
+      "position": [
+        -512,
+        -304
+      ],
+      "id": "aa5e2b47-273a-42ce-90dc-23b2d908c5fe",
+      "name": "MCP Client - Customer DB"
+    }
+  ],
+  "pinData": {
+    "Phone call finished": [
+      {
+        "json": {
+          "headers": {
+            "host": "qaware.app.n8n.cloud",
+            "user-agent": "Deno/1.45.2 (variant; SupabaseEdgeRuntime/1.68.0)",
+            "content-length": "13591",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "accept-language": "*",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "2600:1f18:5427:6501:83e:bb23:fbf1:65da",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "961c9a63729cb4a5-IAD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "2600:1f18:5427:6501:83e:bb23:fbf1:65da, 104.23.211.4",
+            "x-forwarded-host": "qaware.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-36-bc488dfd9-8d4lp",
+            "x-is-trusted": "yes",
+            "x-real-ip": "2600:1f18:5427:6501:83e:bb23:fbf1:65da"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "event_type": "post_call_transcription",
+            "event_timestamp": 1752953107,
+            "processed_at": "2025-07-19T19:25:08.666Z",
+            "conversation_id": "conv_01k0j26takek4ss8qensbr8ehf",
+            "agent_id": "agent_01jzwamqzee4q9qh9m9q5e3x50",
+            "call_id": "conv_01k0j26takek4ss8qensbr8ehf",
+            "customer_id": "8baf1b3f-b32b-40e9-8617-b134f8e8b8bf",
+            "status": "done",
+            "messages": [
+              {
+                "role": "agent",
+                "message": "Hallo, ich bin der Agent zur KFZ Schadenmeldung der S&W Versicherung. Wie kann ich Ihnen helfen?",
+                "timestamp": 11,
+                "has_tool_calls": false,
+                "has_tool_results": false,
+                "has_feedback": false
+              },
+              {
+                "role": "user",
+                "message": "Hallo, Dominik Lange mein Name. Ich habe einen Unfall.",
+                "timestamp": 16,
+                "has_tool_calls": false,
+                "has_tool_results": false,
+                "has_feedback": false
+              },
+              {
+                "role": "agent",
+                "message": "Guten Tag, Herr Lange. Es tut mir leid zu hören, dass Sie einen Unfall hatten. Bevor wir mit der Schadenaufnahme beginnen können, muss ich bitte noch Ihr Geburtsdatum erfragen, um Ihre Identität zu überprüfen.",
+                "timestamp": 23,
+                "has_tool_calls": false,
+                "has_tool_results": false,
+                "has_feedback": false
+              },
+              {
+                "role": "user",
+                "message": "16. April 1988.",
+                "timestamp": 35,
+                "has_tool_calls": false,
+                "has_tool_results": false,
+                "has_feedback": false
+              },
+              {
+                "role": "agent",
+                "message": null,
+                "timestamp": 41,
+                "has_tool_calls": true,
+                "has_tool_results": false,
+                "has_feedback": false
+              },
+              {
+                "role": "agent",
+                "message": null,
+                "timestamp": 41,
+                "has_tool_calls": false,
+                "has_tool_results": true,
+                "has_feedback": false
+              },
+              {
+                "role": "agent",
+                "message": "Vielen Dank, Herr Lange. Ihre Identität wurde erfolgreich überprüft. Es tut mir leid zu hören, dass Sie einen Unfall hatten. Um den Schaden aufzunehmen, benötige ich nun einige Informationen von Ihnen. Zuerst: Welches amtliche Kennzeichen hat das Fahrzeug, das den Schaden erlitten hat?",
+                "timestamp": 41,
+                "has_tool_calls": false,
+                "has_tool_results": false,
+                "has_feedback": false
+              },
+              {
+                "role": "user",
+                "message": "MLP2789",
+                "timestamp": 58,
+                "has_tool_calls": false,
+                "has_tool_results": false,
+                "has_feedback": false
+              },
+              {
+                "role": "agent",
+                "message": "Vielen Dank. Können Sie mir bitte sagen, wann genau der Unfall passiert ist und um welche Uhrzeit?",
+                "timestamp": 65,
+                "has_tool_calls": false,
+                "has_tool_results": false,
+                "has_feedback": false
+              },
+              {
+                "role": "user",
+                "message": "Der Unfall hatte sich am 17. Juli um 17.28 Uhr ereignet in der Müllerstraße 1 in München. Ich habe dort geparkt gehabt und beim Ausparken habe ich das vor mir platzierte Auto gerammt. Bei mir ist der rechte vordere Kotflügel kaputt, Fahrer war ich, Personen-Shaden gibt es keine und auch ansonsten keine weiteren Schäden.",
+                "timestamp": 71,
+                "has_tool_calls": false,
+                "has_tool_results": false,
+                "has_feedback": false
+              },
+              {
+                "role": "agent",
+                "message": "Vielen Dank für die detaillierte Beschreibung, Herr Lange. Ich habe notiert, dass der Unfall am siebzehnten Juli um siebzehn Uhr achtundzwanzig in der Müllerstraße eins in München passiert ist, als Sie beim Ausparken das vor Ihnen geparkte Auto gerammt haben. Ihr rechter vorderer Kotflügel ist beschädigt, und es gab keine Verletzungen oder weitere Schäden.\nKönnen Sie mir noch bestätigen, ob an dem anderen Fahrzeug, das Sie gerammt haben, auch ein Schaden entstanden ist?...",
+                "timestamp": 115,
+                "has_tool_calls": false,
+                "has_tool_results": false,
+                "has_feedback": false
+              }
+            ],
+            "conversation_flow": {
+              "user_messages": [
+                "Hallo, Dominik Lange mein Name. Ich habe einen Unfall.",
+                "16. April 1988.",
+                "MLP2789",
+                "Der Unfall hatte sich am 17. Juli um 17.28 Uhr ereignet in der Müllerstraße 1 in München. Ich habe dort geparkt gehabt und beim Ausparken habe ich das vor mir platzierte Auto gerammt. Bei mir ist der rechte vordere Kotflügel kaputt, Fahrer war ich, Personen-Shaden gibt es keine und auch ansonsten keine weiteren Schäden."
+              ],
+              "agent_messages": [
+                "Hallo, ich bin der Agent zur KFZ Schadenmeldung der S&W Versicherung. Wie kann ich Ihnen helfen?",
+                "Guten Tag, Herr Lange. Es tut mir leid zu hören, dass Sie einen Unfall hatten. Bevor wir mit der Schadenaufnahme beginnen können, muss ich bitte noch Ihr Geburtsdatum erfragen, um Ihre Identität zu überprüfen.",
+                null,
+                null,
+                "Vielen Dank, Herr Lange. Ihre Identität wurde erfolgreich überprüft. Es tut mir leid zu hören, dass Sie einen Unfall hatten. Um den Schaden aufzunehmen, benötige ich nun einige Informationen von Ihnen. Zuerst: Welches amtliche Kennzeichen hat das Fahrzeug, das den Schaden erlitten hat?",
+                "Vielen Dank. Können Sie mir bitte sagen, wann genau der Unfall passiert ist und um welche Uhrzeit?",
+                "Vielen Dank für die detaillierte Beschreibung, Herr Lange. Ich habe notiert, dass der Unfall am siebzehnten Juli um siebzehn Uhr achtundzwanzig in der Müllerstraße eins in München passiert ist, als Sie beim Ausparken das vor Ihnen geparkte Auto gerammt haben. Ihr rechter vorderer Kotflügel ist beschädigt, und es gab keine Verletzungen oder weitere Schäden.\nKönnen Sie mir noch bestätigen, ob an dem anderen Fahrzeug, das Sie gerammt haben, auch ein Schaden entstanden ist?..."
+              ],
+              "full_conversation": "agent: Hallo, ich bin der Agent zur KFZ Schadenmeldung der S&W Versicherung. Wie kann ich Ihnen helfen?\nuser: Hallo, Dominik Lange mein Name. Ich habe einen Unfall.\nagent: Guten Tag, Herr Lange. Es tut mir leid zu hören, dass Sie einen Unfall hatten. Bevor wir mit der Schadenaufnahme beginnen können, muss ich bitte noch Ihr Geburtsdatum erfragen, um Ihre Identität zu überprüfen.\nuser: 16. April 1988.\nagent: null\nagent: null\nagent: Vielen Dank, Herr Lange. Ihre Identität wurde erfolgreich überprüft. Es tut mir leid zu hören, dass Sie einen Unfall hatten. Um den Schaden aufzunehmen, benötige ich nun einige Informationen von Ihnen. Zuerst: Welches amtliche Kennzeichen hat das Fahrzeug, das den Schaden erlitten hat?\nuser: MLP2789\nagent: Vielen Dank. Können Sie mir bitte sagen, wann genau der Unfall passiert ist und um welche Uhrzeit?\nuser: Der Unfall hatte sich am 17. Juli um 17.28 Uhr ereignet in der Müllerstraße 1 in München. Ich habe dort geparkt gehabt und beim Ausparken habe ich das vor mir platzierte Auto gerammt. Bei mir ist der rechte vordere Kotflügel kaputt, Fahrer war ich, Personen-Shaden gibt es keine und auch ansonsten keine weiteren Schäden.\nagent: Vielen Dank für die detaillierte Beschreibung, Herr Lange. Ich habe notiert, dass der Unfall am siebzehnten Juli um siebzehn Uhr achtundzwanzig in der Müllerstraße eins in München passiert ist, als Sie beim Ausparken das vor Ihnen geparkte Auto gerammt haben. Ihr rechter vorderer Kotflügel ist beschädigt, und es gab keine Verletzungen oder weitere Schäden.\nKönnen Sie mir noch bestätigen, ob an dem anderen Fahrzeug, das Sie gerammt haben, auch ein Schaden entstanden ist?..."
+            },
+            "transcript": [
+              {
+                "role": "agent",
+                "message": "Hallo, ich bin der Agent zur KFZ Schadenmeldung der S&W Versicherung. Wie kann ich Ihnen helfen?",
+                "time_in_call_secs": 11
+              },
+              {
+                "role": "user",
+                "message": "Hallo, Dominik Lange mein Name. Ich habe einen Unfall.",
+                "time_in_call_secs": 16
+              },
+              {
+                "role": "agent",
+                "message": "Guten Tag, Herr Lange. Es tut mir leid zu hören, dass Sie einen Unfall hatten. Bevor wir mit der Schadenaufnahme beginnen können, muss ich bitte noch Ihr Geburtsdatum erfragen, um Ihre Identität zu überprüfen.",
+                "time_in_call_secs": 23
+              },
+              {
+                "role": "user",
+                "message": "16. April 1988.",
+                "time_in_call_secs": 35
+              },
+              {
+                "role": "agent",
+                "message": null,
+                "time_in_call_secs": 41,
+                "tool_calls": [
+                  {
+                    "type": "webhook",
+                    "request_id": "verify_customer_identity_8aa10415c6fc42e197b817ff06ce16b0",
+                    "tool_name": "verify_customer_identity",
+                    "params_as_json": "{\"lastName\": \"Lange\", \"firstName\": \"Dominik\", \"dateOfBirth\": \"16. April 1988\"}",
+                    "tool_has_been_called": true,
+                    "tool_details": {
+                      "type": "webhook",
+                      "method": "POST",
+                      "url": "https://zowhymnefxnbqfztgqyg.functions.supabase.co/verify-identity-v3",
+                      "headers": {
+                        "Content Type": "application/json"
+                      },
+                      "path_params": {},
+                      "query_params": {},
+                      "body": "{\"conversation_id\": \"conv_01k0j26takek4ss8qensbr8ehf\", \"lastName\": \"Lange\", \"firstName\": \"Dominik\", \"dateOfBirth\": \"16. April 1988\", \"agent_id\": \"agent_01jzwamqzee4q9qh9m9q5e3x50\"}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "agent",
+                "message": null,
+                "time_in_call_secs": 41,
+                "tool_results": [
+                  {
+                    "type": "webhook",
+                    "request_id": "verify_customer_identity_8aa10415c6fc42e197b817ff06ce16b0",
+                    "tool_name": "verify_customer_identity",
+                    "result_value": "{\"verified\":true,\"matchConfidence\":1,\"customer\":{\"id\":\"8baf1b3f-b32b-40e9-8617-b134f8e8b8bf\",\"customer_id\":\"8baf1b3f-b32b-40e9-8617-b134f8e8b8bf\",\"first_name\":\"Dominik\",\"last_name\":\"Lange\",\"email\":\"dominik.lange@example.com\"},\"details\":{\"matchedBy\":\"name_dob\",\"nameSimilarity\":{\"firstName\":1,\"lastName\":1,\"average\":1}}}",
+                    "is_error": false,
+                    "tool_has_been_called": true,
+                    "tool_latency_secs": 0.7289209610316902,
+                    "dynamic_variable_updates": []
+                  }
+                ]
+              },
+              {
+                "role": "agent",
+                "message": "Vielen Dank, Herr Lange. Ihre Identität wurde erfolgreich überprüft. Es tut mir leid zu hören, dass Sie einen Unfall hatten. Um den Schaden aufzunehmen, benötige ich nun einige Informationen von Ihnen. Zuerst: Welches amtliche Kennzeichen hat das Fahrzeug, das den Schaden erlitten hat?",
+                "time_in_call_secs": 41
+              },
+              {
+                "role": "user",
+                "message": "MLP2789",
+                "time_in_call_secs": 58
+              },
+              {
+                "role": "agent",
+                "message": "Vielen Dank. Können Sie mir bitte sagen, wann genau der Unfall passiert ist und um welche Uhrzeit?",
+                "time_in_call_secs": 65
+              },
+              {
+                "role": "user",
+                "message": "Der Unfall hatte sich am 17. Juli um 17.28 Uhr ereignet in der Müllerstraße 1 in München. Ich habe dort geparkt gehabt und beim Ausparken habe ich das vor mir platzierte Auto gerammt. Bei mir ist der rechte vordere Kotflügel kaputt, Fahrer war ich, Personen-Shaden gibt es keine und auch ansonsten keine weiteren Schäden.",
+                "time_in_call_secs": 71
+              },
+              {
+                "role": "agent",
+                "message": "Vielen Dank für die detaillierte Beschreibung, Herr Lange. Ich habe notiert, dass der Unfall am siebzehnten Juli um siebzehn Uhr achtundzwanzig in der Müllerstraße eins in München passiert ist, als Sie beim Ausparken das vor Ihnen geparkte Auto gerammt haben. Ihr rechter vorderer Kotflügel ist beschädigt, und es gab keine Verletzungen oder weitere Schäden.\nKönnen Sie mir noch bestätigen, ob an dem anderen Fahrzeug, das Sie gerammt haben, auch ein Schaden entstanden ist?...",
+                "time_in_call_secs": 115
+              }
+            ],
+            "conversation_summary": {
+              "total_turns": 11,
+              "user_turns": 4,
+              "agent_turns": 7,
+              "duration_secs": 115,
+              "first_user_message": "Hallo, Dominik Lange mein Name. Ich habe einen Unfall.",
+              "last_user_message": "Der Unfall hatte sich am 17. Juli um 17.28 Uhr ereignet in der Müllerstraße 1 in München. Ich habe dort geparkt gehabt und beim Ausparken habe ich das vor mir platzierte Auto gerammt. Bei mir ist der rechte vordere Kotflügel kaputt, Fahrer war ich, Personen-Shaden gibt es keine und auch ansonsten keine weiteren Schäden.",
+              "key_topics": []
+            },
+            "analysis": {
+              "evaluation_criteria_results": {},
+              "data_collection_results": {},
+              "call_successful": "success",
+              "transcript_summary": "Dominik Lange reports a car accident. The agent verifies his identity using his name and date of birth. Mr. Lange provides details about the accident: it occurred on July 17th at 17:28 on Müllerstraße in Munich while he was parking. He hit the car in front of him, damaging his right front fender. No one was injured. The agent confirms the details and asks about damage to the other vehicle.\n"
+            },
+            "metadata": {
+              "start_time_unix_secs": 1752952957,
+              "accepted_time_unix_secs": 1752952957,
+              "call_duration_secs": 143,
+              "cost": 1001,
+              "deletion_settings": {
+                "deletion_time_unix_secs": 1816025106,
+                "deleted_logs_at_time_unix_secs": null,
+                "deleted_audio_at_time_unix_secs": null,
+                "deleted_transcript_at_time_unix_secs": null,
+                "delete_transcript_and_pii": true,
+                "delete_audio": true
+              },
+              "feedback": {
+                "overall_score": null,
+                "likes": 0,
+                "dislikes": 0
+              },
+              "authorization_method": "public",
+              "charging": {
+                "dev_discount": false,
+                "is_burst": false,
+                "tier": "creator",
+                "llm_usage": {
+                  "irreversible_generation": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 42044,
+                          "price": 0.006306599999999999
+                        },
+                        "input_cache_read": {
+                          "tokens": 10254,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 256,
+                          "price": 0.0001536
+                        }
+                      }
+                    }
+                  },
+                  "initiated_generation": {
+                    "model_usage": {
+                      "gemini-2.5-flash": {
+                        "input": {
+                          "tokens": 63957,
+                          "price": 0.00959355
+                        },
+                        "input_cache_read": {
+                          "tokens": 10254,
+                          "price": 0
+                        },
+                        "input_cache_write": {
+                          "tokens": 0,
+                          "price": 0
+                        },
+                        "output_total": {
+                          "tokens": 307,
+                          "price": 0.00018419999999999998
+                        }
+                      }
+                    }
+                  }
+                },
+                "llm_price": 0.00977775,
+                "llm_charge": 45,
+                "call_charge": 956
+              },
+              "phone_call": null,
+              "batch_call": null,
+              "termination_reason": "Client disconnected: 1006",
+              "error": null,
+              "main_language": "de",
+              "rag_usage": {
+                "usage_count": 4,
+                "embedding_model": "multilingual_e5_large_instruct"
+              },
+              "text_only": false,
+              "features_usage": {
+                "language_detection": {
+                  "enabled": true,
+                  "used": false
+                },
+                "transfer_to_agent": {
+                  "enabled": false,
+                  "used": false
+                },
+                "transfer_to_number": {
+                  "enabled": false,
+                  "used": false
+                },
+                "multivoice": {
+                  "enabled": false,
+                  "used": false
+                },
+                "pii_zrm_workspace": false,
+                "pii_zrm_agent": false
+              },
+              "eleven_assistant": {
+                "is_eleven_assistant": false
+              },
+              "initiator_id": null,
+              "conversation_initiation_source": "unknown",
+              "conversation_initiation_source_version": null,
+              "timezone": null,
+              "original_transcript_length": 11,
+              "filtered_transcript_length": 11,
+              "optimization_ratio": 0
+            },
+            "conversation_config": {
+              "conversation_config_override": {
+                "tts": {
+                  "voice_id": null
+                },
+                "conversation": {
+                  "text_only": null
+                },
+                "agent": {
+                  "first_message": null,
+                  "language": "de",
+                  "prompt": null
+                }
+              },
+              "custom_llm_extra_body": {},
+              "user_id": null,
+              "dynamic_variables": {
+                "system__agent_id": "agent_01jzwamqzee4q9qh9m9q5e3x50",
+                "system__conversation_id": "conv_01k0j26takek4ss8qensbr8ehf",
+                "system__caller_id": null,
+                "system__called_number": null,
+                "system__call_duration_secs": 143,
+                "system__time_utc": "2025-07-19T19:25:00.715963+00:00",
+                "system__time": "Saturday, 19:25 19 July 2025",
+                "system__timezone": null,
+                "system__call_sid": null
+              }
+            }
+          },
+          "webhookUrl": "https://qaware.app.n8n.cloud/webhook/claim-intake-trigger",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Phone call finished": {
+      "main": [
+        [
+          {
+            "node": "Claims Analysis (Simple node)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Claims Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claims Analysis (Simple node)": {
+      "main": [
+        [
+          {
+            "node": "Store claim data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claims Analysis": {
+      "main": [
+        []
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claims Analysis",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client - Customer DB": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claims Analysis (Simple node)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "cf6056bb-b9dd-4098-8726-bb4faf6e272b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5e9abefdcd5a4b9024ca9287ddea48e94f6d3e20694f7b18d087e54a3d9ca807"
+  },
+  "id": "Dgqct98Dhqd1yMfE",
+  "tags": []
+}
