@@ -22,7 +22,9 @@ v1alpha1.extension(name='agent-gateway-krakend', repo_name='agentic-layer', repo
 load('ext://agent-gateway-krakend', 'agent_gateway_krakend_install')
 agent_gateway_krakend_install(version='0.1.4')
 
-
+# Override Agent resource to use image from spec.image field
+# As a consequence, all agents have to specify the image field.
+# Unfortunately, Tilt does not currently support using a default/optional image pattern with k8s_kind.
 k8s_kind(
     '^Agent$',
     image_json_path='{.spec.image}',
