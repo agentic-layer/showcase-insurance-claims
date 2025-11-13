@@ -3,12 +3,12 @@ FROM node:22-alpine AS frontend-builder
 WORKDIR /app/
 
 # Copy package files
-COPY frontend/package*.json ./
+COPY package*.json ./
 
 RUN npm ci
 
 # Copy the rest of the source code
-COPY frontend/ ./
+COPY . ./
 
 RUN npm run build
 
@@ -22,7 +22,7 @@ RUN apk add --no-cache gettext
 RUN rm -rf /etc/nginx/conf.d/default.conf
 
 # Copy nginx configuration template
-COPY frontend/nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
 # Copy built files from previous stage
 COPY --from=frontend-builder /app/dist /usr/share/nginx/html/

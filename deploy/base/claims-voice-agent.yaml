@@ -3,10 +3,17 @@ kind: Agent
 metadata:
   name: claims-voice-agent
 spec:
+  framework: google-adk
   image: claims_voice_agent:latest
   env:
+    - name: LOGLEVEL
+      value: "DEBUG"
     - name: OTEL_SERVICE_NAME
       value: claims-voice-agent
+    - name: AGENT_OTEL_ENABLED
+      value: "true"
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: "http://lgtm.monitoring.svc.cluster.local:4318"
     - name: GOOGLE_API_KEY
       valueFrom:
         secretKeyRef:
