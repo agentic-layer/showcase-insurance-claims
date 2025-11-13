@@ -11,15 +11,11 @@ inputs:
     description: 'Name of the image to build'
     required: true
     type: string
-  dockerfile:
-    description: 'Path to the Dockerfile'
-    required: true
-    type: string
-  build_arg_key:
-    description: 'Build argument key name (optional - omit for images without build args)'
+  context:
+    description: 'Build context directory'
     required: false
     type: string
-    default: ''
+    default: '.'
   image_tag:
     description: 'Image tag to use'
     required: false
@@ -34,24 +30,10 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: 'Build Docker Image (with build args)'
-      if: ${{ inputs.build_arg_key != '' }}
+    - name: 'Build Docker Image'
       uses: 'docker/build-push-action@v6'
       with:
-        context: .
-        file: ${{ inputs.dockerfile }}
-        push: false
-        load: true   # Load image into local Docker daemon for potential pushing
-        tags: europe-west3-docker.pkg.dev/qaware-paal/agentic-layer-private/${{ inputs.image_name }}:${{ inputs.image_tag }}
-        build-args: |
-          ${{ inputs.build_arg_key }}=${{ inputs.image_name }}
-
-    - name: 'Build Docker Image (without build args)'
-      if: ${{ inputs.build_arg_key == '' }}
-      uses: 'docker/build-push-action@v6'
-      with:
-        context: .
-        file: ${{ inputs.dockerfile }}
+        context: ${{ inputs.context }}
         push: false
         load: true   # Load image into local Docker daemon for potential pushing
         tags: europe-west3-docker.pkg.dev/qaware-paal/agentic-layer-private/${{ inputs.image_name }}:${{ inputs.image_tag }}

@@ -11,7 +11,7 @@ from google.genai import types
 # Create MCP toolset for claims tools
 customer_database_toolset = MCPToolset(
     connection_params=StreamableHTTPConnectionParams(
-        url="http://mcp-customer-database:8000/mcp/",
+        url="http://customer-database:8000/mcp/",
     ),
 )
 

@@ -1,8 +1,10 @@
 import asyncio
 import base64
 import json
+import os
 import warnings
 
+from agent import root_agent
 from agenticlayer.agent_to_a2a import to_a2a  # type: ignore[import-untyped]
 from dotenv import load_dotenv
 from google.adk.agents import LiveRequestQueue
@@ -18,8 +20,6 @@ from google.genai.types import (
 from starlette.responses import RedirectResponse
 from starlette.routing import Route, WebSocketRoute
 from starlette.websockets import WebSocket
-
-from .agent import root_agent
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
@@ -201,14 +201,9 @@ app = to_a2a(root_agent)
 app.routes.insert(0, Route("/", root_endpoint))
 app.routes.insert(1, WebSocketRoute("/ws/{user_id}", websocket_endpoint))
 
-
-def main():
-    """Main entry point for the agent"""
+# Entry point for IDE to start in debug mode
+# Make sure that the IDE uses the .env file
+if __name__ == "__main__":
     import uvicorn
 
-    # Run the Starlette app (which includes both A2A and custom routes)
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
-
-if __name__ == "__main__":
-    main()
+    uvicorn.run(app, host=os.environ.get("UVICORN_HOST", "localhost"), port=int(os.environ.get("UVICORN_PORT", 8000)))

@@ -9,7 +9,7 @@ import logging
 
 from fastmcp import FastMCP
 
-from . import mock_database
+from mock_database import find_customer_by_name
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -55,7 +55,7 @@ def get_user_data(name: str) -> dict:
         }
     """
     logging.info(f"Retrieving user data for: {name}")
-    return mock_database.find_customer_by_name(name)
+    return find_customer_by_name(name)
 
 
 def main():

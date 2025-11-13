@@ -1,18 +1,22 @@
+[project]
+name = "customer_database"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "fastmcp>=0.2.0",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.17.0",
+    "ruff>=0.14.4",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[project]
-name = "customer_database"
-version = "0.1.0"
-description = "MCP server providing customer data and utility tools for insurance claims processing"
-authors = [
-    {name = "Insurance Claims Team"},
+[tool.hatch.build.targets.wheel]
+include = [
+    "main.py"
 ]
-dependencies = [
-    "fastmcp>=0.2.0",
-]
-requires-python = ">=3.9"
-
-[project.scripts]
-customer_database = "customer_database.__main__:main"

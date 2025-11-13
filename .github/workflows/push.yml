@@ -8,10 +8,16 @@
 name: Push
 
 on:
+  workflow_dispatch:
+  pull_request:
   push:
-    branches: [ main ]
-    tags:
-      - 'v*'
+    branches:
+      - main
+    # Publish semver tags as releases.
+    tags: [ 'v*.*.*' ]
+
+env:
+  REGISTRY: ghcr.io
 
 jobs:
   publish-images:
@@ -24,18 +30,12 @@ jobs:
       fail-fast: false # Ensures that if one build fails, the others will still run
       matrix:
         include:
-        # Agent builds
-        - image_name: claims_voice_agent
-          dockerfile: agents/Dockerfile
-          build_arg_key: AGENT_NAME
-        # MCP server builds
-        - image_name: customer_database
-          dockerfile: mcp-servers/Dockerfile
-          build_arg_key: MCP_SERVER_NAME
-        # Frontend build
-        - image_name: showcase-claims-frontend
-          dockerfile: frontend/Dockerfile
-          build_arg_key: "" # No build arg needed for frontend
+          - image_name: claims_voice_agent
+            context: agents/claims_voice_agent
+          - image_name: customer_database
+            context: mcp-servers/customer_database
+          - image_name: showcase-claims-frontend
+            context: frontend
 
     steps:
       - name: 'Checkout'
@@ -43,33 +43,11 @@ jobs:
         with:
           fetch-depth: 0 # required to fetch all history for all branches and tags
 
-      - name: 'Generate Image Tag'
-        id: 'tag'
-        run: |
-          # Check if this is a tag push
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            # Extract tag name and strip the 'v' prefix
-            TAG_NAME="${{ github.ref_name }}"
-            IMAGE_TAG="${TAG_NAME#v}"
-            echo "tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
-            echo "Generated Tag from version tag: $IMAGE_TAG"
-          else
-            # Generate branch-sha-timestamp format
-            GIT_BRANCH="${{ github.ref_name }}"
-            GIT_SHA="${{ github.sha }}"
-            IMAGE_TAG="${GIT_BRANCH}-${GIT_SHA:0:7}-$(date +%s)"
-            echo "tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
-            echo "Generated Tag from branch: $IMAGE_TAG"
-          fi
-
-      - name: 'Build Docker Image'
-        id: 'build'
-        uses: ./.github/actions/docker-build
-        with:
-          image_name: ${{ matrix.image_name }}
-          dockerfile: ${{ matrix.dockerfile }}
-          build_arg_key: ${{ matrix.build_arg_key }}
-          image_tag: ${{ steps.tag.outputs.tag }}
+      # Set up BuildKit Docker container builder to be able to build
+      # multi-platform images and export cache
+      # https://github.com/docker/setup-buildx-action
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: 'Authenticate to Google Cloud'
         id: 'auth'
@@ -82,5 +60,30 @@ jobs:
       - name: 'Configure Docker for Artifact Registry'
         run: gcloud auth configure-docker europe-west3-docker.pkg.dev
 
-      - name: 'Push Docker Image'
-        run: docker push ${{ steps.build.outputs.image-name }}
+      # Extract metadata (tags, labels) for Docker
+      # https://github.com/docker/metadata-action
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ matrix.image_name }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      # Build and push Docker image with Buildx
+      # https://github.com/docker/build-push-action
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
