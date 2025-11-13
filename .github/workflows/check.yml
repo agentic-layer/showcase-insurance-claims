@@ -27,11 +27,6 @@ jobs:
           version: "0.8.17"
           enable-cache: true
 
-      - name: Setup Python
-        uses: 'actions/setup-python@v6'
-        with:
-          python-version-file: ".python-version"
-
       - name: Check claims-voice-agent
         working-directory: agents/claims_voice_agent
         run: make check
