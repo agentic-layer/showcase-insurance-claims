@@ -17,7 +17,7 @@ on:
     tags: [ 'v*.*.*' ]
 
 env:
-  REGISTRY: ghcr.io
+  REGISTRY: europe-west3-docker.pkg.dev/qaware-paal/agentic-layer-private
 
 jobs:
   publish-images:
