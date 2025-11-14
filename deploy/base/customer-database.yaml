@@ -5,5 +5,5 @@ metadata:
 spec:
   protocol: mcp
   transportType: http
-  image: customer_database:latest
+  image: customer-database:latest
   port: 8000

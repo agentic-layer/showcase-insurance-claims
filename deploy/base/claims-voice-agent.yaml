@@ -4,7 +4,7 @@ metadata:
   name: claims-voice-agent
 spec:
   framework: google-adk
-  image: claims_voice_agent:latest
+  image: claims-voice-agent:latest
   env:
     - name: LOGLEVEL
       value: "DEBUG"

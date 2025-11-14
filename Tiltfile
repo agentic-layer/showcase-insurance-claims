@@ -48,13 +48,13 @@ k8s_resource('customer-database', port_forwards=['12020:8000'], labels=['mcp-ser
 k8s_resource('showcase-claims-frontend', port_forwards='12030:80', labels=['frontend'])
 
 docker_build(
-    'claims_voice_agent',
-    context='./agents/claims_voice_agent',
+    'claims-voice-agent',
+    context='./agents/claims-voice-agent',
 )
 
 docker_build(
-    'customer_database',
-    context='./mcp-servers/customer_database',
+    'customer-database',
+    context='./mcp-servers/customer-database',
 )
 
 docker_build(

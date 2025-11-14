@@ -28,9 +28,9 @@ jobs:
           enable-cache: true
 
       - name: Check claims-voice-agent
-        working-directory: agents/claims_voice_agent
+        working-directory: agents/claims-voice-agent
         run: make check
 
-      - name: Check customer_database
-        working-directory: agents/claims_voice_agent
+      - name: Check customer-database
+        working-directory: agents/claims-voice-agent
         run: make check
