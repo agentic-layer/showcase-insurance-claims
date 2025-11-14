@@ -7,3 +7,4 @@ resources:
   - claims-analysis-agent.yaml
   - showcase-claims-frontend.yaml
   - customer-database.yaml
+  - insurance-claims-workforce.yaml

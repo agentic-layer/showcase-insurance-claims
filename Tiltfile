@@ -4,7 +4,7 @@ update_settings(max_parallel_updates=10)
 load('ext://dotenv', 'dotenv')
 dotenv()
 
-v1alpha1.extension_repo(name='agentic-layer', url='https://github.com/agentic-layer/tilt-extensions', ref='v0.3.3')
+v1alpha1.extension_repo(name='agentic-layer', url='https://github.com/agentic-layer/tilt-extensions', ref='v0.4.0')
 
 v1alpha1.extension(name='cert-manager', repo_name='agentic-layer', repo_path='cert-manager')
 load('ext://cert-manager', 'cert_manager_install')
@@ -38,14 +38,15 @@ k8s_yaml(kustomize('deploy/local'))
 
 # Expose services
 k8s_resource('lgtm', port_forwards=['12000:3000'])
-k8s_resource('ai-gateway-litellm', port_forwards=['12001:4000'], labels=['agentic-layer'], resource_deps=['agent-runtime'])
-k8s_resource('agent-gateway-krakend', port_forwards=['12002:8080'], labels=['agentic-layer'])
-k8s_resource('observability-dashboard', port_forwards=['12004:8000'], labels=['agentic-layer'])
+k8s_resource('ai-gateway-litellm', labels=['agentic-layer'], resource_deps=['agent-runtime'], port_forwards=['12001:4000'])
+k8s_resource('agent-gateway-krakend', labels=['agentic-layer'], port_forwards=['12002:8080'])
+k8s_resource('observability-dashboard', labels=['agentic-layer'], port_forwards=['12004:8000'])
 
-k8s_resource('claims-analysis-agent', port_forwards=['12011:8000'], labels=['agents'], resource_deps=['agent-runtime', 'customer-database'])
-k8s_resource('claims-voice-agent', port_forwards=['12010:8000'], labels=['agents'], resource_deps=['agent-runtime', 'customer-database'])
-k8s_resource('customer-database', port_forwards=['12020:8000'], labels=['mcp-servers'], resource_deps=['agent-runtime'])
-k8s_resource('showcase-claims-frontend', port_forwards='12030:80', labels=['frontend'])
+k8s_resource('insurance-claims-workforce', labels=['showcase'], resource_deps=['agent-runtime'], pod_readiness='ignore')
+k8s_resource('claims-analysis-agent', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database'], port_forwards=['12011:8000'])
+k8s_resource('claims-voice-agent', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database'], port_forwards=['12010:8000'])
+k8s_resource('customer-database', labels=['showcase'], resource_deps=['agent-runtime'], port_forwards=['12020:8000'])
+k8s_resource('showcase-claims-frontend', labels=['showcase'], port_forwards=['12030:80'])
 
 docker_build(
     'claims-voice-agent',
