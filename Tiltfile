@@ -46,7 +46,7 @@ k8s_resource('insurance-claims-workforce', labels=['showcase'], resource_deps=['
 k8s_resource('claims-analysis-agent', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database'], port_forwards=['12011:8000'])
 k8s_resource('claims-voice-agent', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database'], port_forwards=['12010:8000'])
 k8s_resource('customer-database', labels=['showcase'], resource_deps=['agent-runtime'], port_forwards=['12020:8000'])
-k8s_resource('showcase-claims-frontend', labels=['showcase'], port_forwards=['12030:80'])
+k8s_resource('showcase-claims-frontend', labels=['showcase'], resource_deps=['claims-voice-agent'], port_forwards=['12030:80'])
 
 docker_build(
     'claims-voice-agent',
