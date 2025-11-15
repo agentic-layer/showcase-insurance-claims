@@ -12,10 +12,12 @@ spec:
       value: claims-voice-agent
     - name: AGENT_OTEL_ENABLED
       value: "true"
-    - name: OTEL_EXPORTER_OTLP_ENDPOINT
-      value: "http://lgtm.monitoring.svc.cluster.local:4318"
     - name: GOOGLE_API_KEY
       valueFrom:
         secretKeyRef:
           name: api-key-secrets
           key: GEMINI_API_KEY
+  envFrom:
+    - configMapRef:
+        name: otel-tempo-config
+        optional: true
