@@ -33,36 +33,30 @@ k8s_kind(
     pod_readiness='wait',
 )
 
+# Docker builds
+docker_build('claims-voice-agent', context='./agents/claims-voice-agent')
+docker_build('customer-database',  context='./mcp-servers/customer-database')
+docker_build('showcase-claims-frontend', context='./frontend')
+
 # Apply Kubernetes manifests
 k8s_yaml(kustomize('deploy/local'))
 
-# Expose services
-k8s_resource('lgtm', port_forwards=['12000:3000'])
-k8s_resource('ai-gateway-litellm', labels=['agentic-layer'], resource_deps=['agent-runtime'], port_forwards=['12001:4000'])
-k8s_resource('agent-gateway-krakend', labels=['agentic-layer'], port_forwards=['12002:8080'])
-k8s_resource('observability-dashboard', labels=['agentic-layer'], port_forwards=['12004:8000'])
-
+# Showcase Components
 k8s_resource('insurance-claims-workforce', labels=['showcase'], resource_deps=['agent-runtime'], pod_readiness='ignore')
 k8s_resource('claims-analysis-agent', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database'], port_forwards=['12011:8000'])
 k8s_resource('claims-voice-agent', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database'], port_forwards=['12010:8000'])
 k8s_resource('customer-database', labels=['showcase'], resource_deps=['agent-runtime'], port_forwards=['12020:8000'])
 k8s_resource('showcase-claims-frontend', labels=['showcase'], resource_deps=['claims-voice-agent'], port_forwards=['12030:80'])
 
-docker_build(
-    'claims-voice-agent',
-    context='./agents/claims-voice-agent',
-)
+# Agentic Layer Components
+k8s_resource('ai-gateway-litellm', labels=['agentic-layer'], resource_deps=['agent-runtime'], port_forwards=['12001:4000'])
+k8s_resource('agent-gateway-krakend', labels=['agentic-layer'], port_forwards=['12002:8080'])
+k8s_resource('observability-dashboard', labels=['agentic-layer'], port_forwards=['12004:8000'])
 
-docker_build(
-    'customer-database',
-    context='./mcp-servers/customer-database',
-)
+# Monitoring
+k8s_resource('lgtm', labels=['monitoring'], resource_deps=[], port_forwards=['12000:3000'])
 
-docker_build(
-    'showcase-claims-frontend',
-    context='./frontend',
-)
-
+# Secrets for LLM API keys
 google_api_key = os.environ.get('GOOGLE_API_KEY', '')
 if not google_api_key:
     warn('GOOGLE_API_KEY environment variable is not set. Please set it in your shell or .env file.')
