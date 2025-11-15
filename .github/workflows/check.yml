@@ -32,5 +32,5 @@ jobs:
         run: make check
 
       - name: Check customer-database
-        working-directory: agents/claims-voice-agent
+        working-directory: mcp-servers/customer-database
         run: make check
