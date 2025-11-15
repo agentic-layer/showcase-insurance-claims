@@ -50,7 +50,7 @@ k8s_resource('showcase-claims-frontend', labels=['showcase'], resource_deps=['cl
 
 # Agentic Layer Components
 k8s_resource('ai-gateway-litellm', labels=['agentic-layer'], resource_deps=['agent-runtime'], port_forwards=['12001:4000'])
-k8s_resource('agent-gateway-krakend', labels=['agentic-layer'], port_forwards=['12002:8080'])
+k8s_resource('agent-gateway-krakend', labels=['agentic-layer'], resource_deps=['claims-analysis-agent', 'claims-voice-agent'], port_forwards=['12002:8080'])
 k8s_resource('observability-dashboard', labels=['agentic-layer'], port_forwards=['12004:8000'])
 
 # Monitoring
