@@ -1,8 +1,8 @@
-# Insurance Claims Voice Agent Showcase
+# Insurance Claims Showcase
 
-> **🔒 Private Repository** - This is a private repository containing proprietary demo showcases.
-
-A voice-enabled insurance claims intake system built with Google's Gemini Live API, Agent Development Kit (ADK), and Model Context Protocol (MCP) servers. This system provides real-time voice interaction for handling insurance claims intake conversations through specialized AI agents.
+A showcase project demonstrating agent communication for insurance claims intake.
+Includes a voice-enabled insurance claims intake system built with Google's Gemini Live API, Agent Development Kit (ADK), and Model Context Protocol (MCP) servers.
+This system provides real-time voice interaction for handling insurance claims intake conversations through specialized AI agents.
 
 ----
 
