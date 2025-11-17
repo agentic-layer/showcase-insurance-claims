@@ -7,3 +7,4 @@ resources:
   - ./n8n
   - lgtm.yaml
   - ./agentic-layer
+  - otel-tempo-config.yaml
