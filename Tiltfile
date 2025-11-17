@@ -40,9 +40,6 @@ helm_remote(
     namespace='librechat',
     values='./deploy/local/librechat/values.yaml',
 )
-k8s_resource('librechat-librechat', labels=['librechat'], port_forwards=['12040:3080'])
-k8s_resource('librechat-mongodb', labels=['librechat'])
-k8s_resource('librechat-meilisearch', labels=['librechat'])
 
 # Docker builds
 docker_build('claims-voice-agent', context='./agents/claims-voice-agent')
@@ -66,6 +63,15 @@ k8s_resource('observability-dashboard', labels=['agentic-layer'], port_forwards=
 
 # Monitoring
 k8s_resource('lgtm', labels=['monitoring'], resource_deps=[], port_forwards=['12000:3000'])
+
+# LibreChat Components
+k8s_resource('librechat-librechat', labels=['librechat'], port_forwards=['12040:3080'])
+k8s_resource('librechat-mongodb', labels=['librechat'])
+k8s_resource('librechat-meilisearch', labels=['librechat'])
+
+# n8n Components
+k8s_resource('n8n', labels=['n8n'], port_forwards=['12041:5678'])
+k8s_resource('postgres', labels=['n8n'], port_forwards=[])
 
 # Secrets for LLM API keys
 google_api_key = os.environ.get('GOOGLE_API_KEY', '')
