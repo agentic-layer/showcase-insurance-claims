@@ -4,5 +4,6 @@ resources:
   - ../base
   - ./observability-dashboard
   - ./librechat
+  - ./n8n
   - lgtm.yaml
   - ./agentic-layer
