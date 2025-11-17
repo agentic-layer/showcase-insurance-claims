@@ -1,0 +1,45 @@
+Agent: Guten Tag! Hier ist Claimy, Ihre KI-Schadenassistentin. Wie kann ich Ihnen helfen?
+
+Kunde: Hallo, ich hatte gestern einen Autounfall und möchte einen Schaden melden.
+
+Agent: Das tut mir leid zu hören. Ich helfe Ihnen gerne bei der Schadenmeldung. Wie ist Ihr Name?
+
+Kunde: Müller, Hans Müller.
+
+Agent: Danke, Herr Müller. Können Sie mir bitte Ihr Geburtsdatum nennen?
+
+Kunde: 15. März 1985.
+
+Agent: Verstanden. Wie lautet das Kennzeichen des beschädigten Fahrzeugs?
+
+Kunde: M-HM-1234
+
+Agent: Kennzeichen M-HM-1234, notiert. Wann genau ist der Unfall passiert?
+
+Kunde: Gestern um 14:30 Uhr.
+
+Agent: Verstanden, den 16. November 2025 um 14:30 Uhr. Wo ist der Unfall passiert?
+
+Kunde: In München, in der Leopoldstraße Ecke Siegestor.
+
+Agent: Verstanden. Was genau ist passiert?
+
+Kunde: Ich stand an der roten Ampel und wurde von hinten aufgefahren. Der andere Fahrer hat zu spät gebremst.
+
+Agent: Notiert. Wer ist gefahren?
+
+Kunde: Ich selbst.
+
+Agent: Verstanden. Gab es Verletzte?
+
+Kunde: Nein, zum Glück nicht. Nur Blechschaden.
+
+Agent: Notiert. Können Sie mir den Schaden am Fahrzeug beschreiben?
+
+Kunde: Die hintere Stoßstange ist eingedrückt und der Kofferraumdeckel ist verzogen. Außerdem sind die Rückleuchten kaputt.
+
+Agent: Verstanden. Lassen Sie mich Ihre Angaben zusammenfassen: Am 16. November 2025 um 14:30 Uhr ereignete sich ein Auffahrunfall in der Leopoldstraße Ecke Siegestor in München. Sie, Herr Müller, fuhren mit Ihrem Fahrzeug mit dem Kennzeichen M-HM-1234. Sie standen an einer roten Ampel, als ein anderer Fahrer von hinten auffuhr. Es gab keine Verletzten, nur Sachschaden. Die hintere Stoßstange ist eingedrückt, der Kofferraumdeckel verzogen und die Rückleuchten beschädigt. Ist das korrekt?
+
+Kunde: Ja, das stimmt alles.
+
+Agent: Vielen Dank für die Bestätigung. Ich habe Ihre Schadenmeldung erfolgreich übermittelt. Sie erhalten in Kürze eine Bestätigung per E-Mail.
