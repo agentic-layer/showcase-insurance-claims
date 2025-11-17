@@ -1,8 +1,17 @@
 # Insurance Claims Showcase
 
-A showcase project demonstrating agent communication for insurance claims intake.
-Includes a voice-enabled insurance claims intake system built with Google's Gemini Live API, Agent Development Kit (ADK), and Model Context Protocol (MCP) servers.
-This system provides real-time voice interaction for handling insurance claims intake conversations through specialized AI agents.
+A showcase demonstrating the [Agentic Layer](https://docs.agentic-layer.ai/) platform for building and orchestrating AI
+agent systems. This project illustrates multi-agent workflows, agent-to-agent communication via Model Context Protocol (
+MCP), and multiple interaction patterns for insurance claims processing.
+
+**Key Technologies:**
+
+- **Agentic Layer**: Agent orchestration platform with runtime, gateways, and observability
+- **Agents**: Text-based claims analysis agent (Google ADK) and voice-enabled claims intake agent (Gemini Live API)
+- **MCP Servers**: Model Context Protocol servers providing customer database tools
+- **Integration Options**: REST API, A2A protocol, LibreChat UI, n8n workflows
+
+For detailed documentation on Agentic Layer components, see [docs.agentic-layer.ai](https://docs.agentic-layer.ai/).
 
 ----
 
@@ -11,34 +20,60 @@ This system provides real-time voice interaction for handling insurance claims i
 - [Key Features](#key-features)
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
+- [Using the Showcase](#using-the-showcase)
+    - [Testing Agents with curl](#testing-agents-with-curl)
+    - [Using LibreChat](#using-librechat)
+    - [n8n Workflow Integration](#n8n-workflow-integration)
+- [Voice Agent Details](#voice-agent-details)
+- [Architecture Overview](#architecture-overview)
 - [Development](#development)
-- [Gemini Model Selection](#gemini-model-selection-as-of-2025-09-29)
 - [Current Limitations](#current-limitations)
 
 ----
 
 ## Key Features
 
-- **Real-time Voice Conversation**: WebSocket-based bidirectional streaming for low-latency voice interaction
-- **Claims Data Collection**: Agent processes and collects insurance claim information through natural conversation
-- **Mock Customer Database**: MCP server provides simulated customer data for demonstration purposes
-- **Native Voice Model**: Uses Google's native audio models for natural-sounding speech synthesis
-- **ADK Integration**: Built on Agent Development Kit with bidirectional streaming via Gemini Live API
-- **Production Deployment**: Deployed to development cluster with Google SSO-secured access
+### Agentic Layer Platform
+
+This showcase demonstrates the core capabilities of the Agentic Layer platform:
+
+- **Agent Runtime**: Kubernetes-native agent orchestration using Custom Resource Definitions (Agent, ToolServer,
+  AgenticWorkforce)
+- **Agent Gateway**: OpenAI-compatible REST API for accessing agents, enabling standardized integration
+- **AI Gateway**: Unified LLM access via LiteLLM, supporting multiple model providers (Gemini, OpenAI, etc.)
+- **MCP Integration**: Agent capabilities extended through Model Context Protocol tool servers
+- **Multi-Modal Access**: Agents accessible via REST API, A2A protocol, chat UI (LibreChat), and workflow automation (
+  n8n)
+- **Observability**: Full OTEL integration with LGTM stack (Loki, Grafana, Tempo, Mimir)
+
+### Claims Processing Agents
+
+**claims-analysis-agent** (Primary Demo):
+
+- Text-based agent for analyzing insurance claim conversation transcripts
+- Extracts structured JSON data (customer info, incident details, damage assessment)
+- Accessible via multiple channels: Agent Gateway REST API, direct A2A protocol, LibreChat, n8n workflows
+- Uses MCP customer database server for data lookup
+
+**claims-voice-agent** (Specialized Capability):
+
+- Real-time voice conversation for claims intake using Google's Gemini Live API
+- Conducts structured interviews in German via WebSocket streaming
+- See [Voice Agent Details](#voice-agent-details) for more information
 
 ----
 
 ## Prerequisites
 
-The following tools and dependencies are required to run this project:
+The following tools and dependencies are required:
 
-- **Python 3.13+**: Required for agent components and MCP servers
-- **Node.js 22+**: For frontend development and build
+- **Python 3.13+**: For agents and MCP servers
+- **Node.js 22+**: For frontend development
 - **Google Cloud SDK**: For ADK and Gemini API integration
-- **uv 0.5.0+**: Python package manager for dependency management
+- **uv 0.5.0+**: Python package manager
 - **Tilt**: Kubernetes development environment orchestration
-- **Docker**: For containerization and local Kubernetes
-- **Google Gemini API Key**: For Live API access
+- **Docker Desktop**: With Kubernetes enabled
+- **Google Gemini API Key**: For AI model access
 
 ----
 
@@ -50,102 +85,266 @@ The following tools and dependencies are required to run this project:
 # Install system dependencies via Homebrew
 brew bundle
 ```
-```bash
-# Install Python dependencies for agents and MCP servers
-uv sync --all-packages
-```
 
-### 2. Authentication Setup
-
-```bash
-# Authenticate with Google Cloud for AI model access
-gcloud auth application-default login
-```
-
-### 3. Environment Configuration
+### 2. Environment Configuration
 
 Create a `.env` file in the project root:
 
 ```dotenv
-# Google Cloud Configuration
-GOOGLE_GENAI_USE_VERTEXAI=FALSE
+# Required: Google Gemini API Key
 GOOGLE_API_KEY=<your-api-key-here>
+
+# Optional: OpenAI API for testing with other models
+OPENAI_API_KEY=<your-openai-api-key>
 ```
 
-### 4. Start the Application
+### 3. Start All Services
 
-Launch all services using Tilt:
+Launch the complete environment using Tilt:
 
 ```bash
-# Start all agents and frontend
+# Start all agents, MCP servers, gateways, and infrastructure
 tilt up
 ```
+
+**Service URLs:**
+
+- **LibreChat**: http://localhost:12040
+- **n8n**: http://localhost:12041
+- **Grafana (Monitoring)**: http://localhost:12000
+- **Observability Dashboard**: http://localhost:12004
+- **Agent Gateway**: http://localhost:12002
+- **AI Gateway (LiteLLM)**: http://localhost:12001
+- **Frontend (Voice Agent)**: http://localhost:12030
+
+----
+
+## Using the Showcase
+
+### Testing Agents with curl
+
+The showcase includes a test script demonstrating both Agent Gateway protocols:
+
 ```bash
-# View real-time logs
-tilt logs
+# Test both OpenAI-compatible API and A2A protocol
+./scripts/test-claims-agent.sh
+
+# Test only OpenAI-compatible API
+./scripts/test-claims-agent.sh openai
+
+# Test only A2A protocol
+./scripts/test-claims-agent.sh a2a
 ```
 
-**Expected Results:**
-- Frontend available at http://localhost:8080
+### Using LibreChat
+
+LibreChat provides a user-friendly chat interface for interacting with agents and LLMs.
+
+**Access:** http://localhost:12040
+
+**Configured Endpoints:**
+
+1. **AI Gateway Endpoint**
+    - Name: "AI Gateway"
+    - Direct access to LLMs via LiteLLM
+
+2. **Agent Gateway Endpoint**
+    - Name: "Agent Gateway - claims-analysis-agent"
+    - Chat directly with the claims-analysis-agent
+    - Paste conversation transcripts for analysis
+
+**Getting Started:**
+
+1. Open http://localhost:12040
+2. Create an account (stored locally in MongoDB)
+3. Select "Agent Gateway - claims-analysis-agent" from the endpoint dropdown
+4. Paste a claims conversation transcript or use the example from `scripts/example-transcript.txt`
+5. The agent will analyze the conversation and return structured claims data
+
+### n8n Workflow Integration
+
+n8n provides workflow automation capabilities for integrating agents into business processes.
+
+**Access:** http://localhost:12041
+
+**Configuration:**
+There is no configuration-as-code for n8n in this showcase. Use the web interface to:
+1. Create an account
+2. Install the A2A protocol node from the n8n community nodes
+   1. Open http://localhost:12041/settings/community-nodes
+   2. Install the following community node: `@agentic-layer/n8n-nodes-a2a`
+3. Import example workflows from the `n8n-workflows/` directory
+   1. Open http://localhost:12041/workflow/new
+   2. Click "Import from File" and select a workflow JSON file (see below)
+4. Configure any necessary credentials (e.g., Agent Gateway URL, API keys)
+   1. For Agent Gateway, use `http://agent-gateway-krakend.agent-gateway-krakend:10000/claims-analysis-agent`
+   2. For AI Gateway (LiteLLM), use `http://ai-gateway-litellm.ai-gateway:4000`
+
+**Example Workflows:**
+Three example workflows are included in [n8n-workflows](n8n-workflows):
+
+1. **Claims Analysis with AI Gateway**: Uses LiteLLM with MCP tool integration
+2. **Claims Analysis with Agent Gateway / A2A**: Direct agent-to-agent communication
+3. **Claims Analysis with Agent Gateway / OpenAI API**: OpenAI-compatible API integration
+
+**Common Pattern:**
+All workflows follow a webhook → agent analysis → data extraction pattern.
+
+----
+
+## Voice Agent Details
+
+### Real-Time Voice Conversation
+
+The **claims-voice-agent** provides specialized real-time voice interaction capabilities for insurance claims intake.
+
+**Features:**
+
+- Native German language conversation via Gemini Live API
+- Structured interview protocol (customer verification, incident details, damage assessment)
+- WebSocket-based bidirectional audio streaming
+- Real-time transcription of user input
+
+**Access:**
+
+- **Custom Frontend**: http://localhost:12030
+- **WebSocket Endpoint**: `ws://localhost:12010/ws/{user_id}?is_audio=true`
+
+### Gemini Model Selection
+
+The voice agent supports multiple Gemini Live API models:
+
+**Non-Native Audio Models** (Fast, robotic voice):
+
+- `gemini-2.0-flash-exp`
+- `gemini-2.0-flash-live-001`
+
+**Native Audio Models** (Natural voice, potentially higher latency):
+
+- `gemini-2.5-flash-native-audio-latest` (currently configured)
+- `gemini-2.5-flash-preview-native-audio-dialog`
+
+To change models, edit `agents/claims-voice-agent/agent.py` and uncomment the desired model.
+
+### Voice Agent Limitations
+
+**Agent Gateway Integration:**
+The voice agent is NOT exposed via Agent Gateway because:
+
+- Gemini Live API requires direct WebSocket connection for real-time bidirectional audio streaming
+- ADK with Gemini Live API doesn't support LiteLLM proxy integration
+
+**Observability:**
+
+- ADK with Gemini Live API doesn't support plugins/callbacks for detailed tracing
+- Observability dashboard shows only WebSocket metadata, not conversation details
+- Use application logs for debugging voice agent interactions
+
+**Development:**
+Use the custom WebSocket frontend at http://localhost:12030 to interact with the voice agent.
+
+----
+
+## Architecture Overview
+
+### Agentic Layer Components
+
+- **Agent Runtime** (`agent-runtime`): Core Kubernetes operator managing Agent, ToolServer, and AgenticWorkforce
+  CRDs
+- **AI Gateway** (`ai-gateway-litellm`): Unified LLM access via LiteLLM supporting multiple
+  providers
+- **Agent Gateway** (`agent-gateway-krakend`): OpenAI-compatible REST API for accessing
+  agents
+- **Observability**: LGTM stack (Loki, Grafana, Tempo, Mimir) with OpenTelemetry
+  integration
+
+For detailed architecture documentation, see [docs.agentic-layer.ai](https://docs.agentic-layer.ai/).
+
+### Showcase Components
+
+- **claims-analysis-agent**: Text-based agent using Google ADK, exposed via Agent Gateway
+- **claims-voice-agent**: Voice agent using Google ADK + Gemini Live API, accessed via WebSocket
+- **customer-database**: MCP server providing customer lookup tools
+- **Frontend**: React + WebSocket client for voice agent interaction
+- **LibreChat**: Chat UI with configured endpoints for agents and LLM access
+- **n8n**: Workflow automation platform with example agent integration workflows
+
+### Port Reference
+
+| Service                 | Port  | Description                  |
+|-------------------------|-------|------------------------------|
+| Grafana                 | 12000 | Metrics and monitoring       |
+| AI Gateway              | 12001 | LiteLLM unified LLM access   |
+| Agent Gateway           | 12002 | OpenAI-compatible agent API  |
+| Observability Dashboard | 12004 | Agent observability UI       |
+| claims-voice-agent      | 12010 | WebSocket streaming endpoint |
+| claims-analysis-agent   | 12011 | Direct A2A protocol access   |
+| customer-database       | 12020 | MCP server HTTP endpoint     |
+| Frontend (Voice)        | 12030 | React WebSocket client       |
+| LibreChat               | 12040 | Chat UI for agents/LLMs      |
+| n8n                     | 12041 | Workflow automation          |
+
+----
 
 ## Development
 
-### Developer Setup
-For detailed contributing guidelines, refer to the [global contributing guide](https://github.com/agentic-layer/.github?tab=contributing-ov-file).
-
-**Mandatory first step for contributors:**
-```bash
-# Activate pre-commit hooks
-pre-commit install
-```
-
 ### Code Quality Standards
 
-**Code Style:**
-- **Linting**: Ruff with 120 character line limit
-- **Type Checking**: mypy for static type analysis
-- **Security**: Bandit for security vulnerability detection
-- **Import Organization**: import-linter for dependency management
+**Per-component commands** (run in `agents/*/` or `mcp-servers/*/`):
 
-**Development Commands:**
 ```bash
-# Run all quality checks
-uv run poe check
+# Install/sync dependencies
+uv sync
 
-# Individual checks
-uv run poe mypy          # Type checking
-uv run poe ruff          # Linting and formatting
-uv run poe bandit        # Security analysis
-uv run poe lint-imports  # Import dependency validation
-uv run poe test          # Execute test suite
+# Type checking
+uv run mypy .
 
-# Auto-formatting
-uv run poe format        # Code formatting
-uv run poe lint          # Auto-fix linting issues
+# Linting
+uv run ruff check
+
+# Auto-fix linting issues
+uv run ruff check --fix
+
+# Run all checks
+make check
 ```
 
-## Gemini Model Selection (as of 2025-09-29)
+**Frontend (React + TypeScript):**
 
-The agent supports multiple Gemini Live API models with different characteristics:
+```bash
+cd frontend
 
-**Non-Native Audio Models** (Fast, robotic voice):
-- `gemini-2.0-flash-exp`
-- `gemini-2.0-flash-live-001`
-- `gemini-live-2.5-flash-preview`
-- `gemini-2.5-flash-live-preview`
+# Install dependencies
+npm install
 
-**Native Audio Models** (Natural voice, slower):
-- `gemini-2.5-flash-preview-native-audio-dialog`
-- `gemini-2.5-flash-exp-native-audio-thinking-dialog` (too high latency for real-time conversations)
-- `gemini-2.5-flash-native-audio-latest`
-- `gemini-2.5-flash-native-audio-preview-09-2025`
+# Development server
+npm run dev
 
-**Note**: Native audio models sometimes have short pauses in the TTS output.
+# Linting
+npm run lint
+
+# Tests
+npm run test
+npm run test:ui       # With UI
+npm run test:coverage # With coverage
+
+# Build
+npm run build         # Production
+npm run build:dev     # Development
+```
+
+----
 
 ## Current Limitations
 
-- **No Data Forwarding**: Claims data is not forwarded to other systems or agents for further processing
-- **No LiteLLM Support**: LiteLLM cannot be used as the ADK does not support LiteLLM's Gemini Live API implementation for real-time streaming
-- **Limited Observability**: ADK with Gemini Live API does not support plugins/callbacks, preventing use of the observability dashboard. 
-- **No Traces**: They would only show WebSocket data with information about audio chunks sent/received
-- **Claims Processing**: The agent collects claims data during the intake conversation but does not persist claims beyond the conversation session
+- **Claims Data Persistence**: Claims data is collected during conversations but not persisted to a database or
+  forwarded to downstream systems
+- **Voice Agent Integration**: Voice agent uses direct Gemini Live API connection and cannot use LiteLLM or be exposed
+  via Agent Gateway due to real-time streaming requirements
+- **Observability for Voice**: ADK with Gemini Live API doesn't support detailed tracing; only WebSocket metadata is
+  captured
+- **No Authentication**: Current setup has no authentication/authorization; suitable for development and demonstration
+  only
+
+For production deployments, consider implementing data persistence, authentication, and integration with existing claims
+management systems.
