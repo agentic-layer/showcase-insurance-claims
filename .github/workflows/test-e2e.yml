@@ -36,3 +36,5 @@ jobs:
         run: |
           kubectl port-forward service/agent-gateway-krakend -n agent-gateway-krakend 10000:10000 &
           curl --retry 5 --retry-connrefused -vf http://localhost:10000/claims-analysis-agent/.well-known/agent-card.json
+          
+          ./scripts/test-claims-agent.sh all
