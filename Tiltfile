@@ -33,6 +33,17 @@ k8s_kind(
     pod_readiness='wait',
 )
 
+load('ext://helm_remote', 'helm_remote')
+helm_remote(
+    'librechat',
+    repo_url='oci://ghcr.io/danny-avila/librechat-chart',
+    namespace='librechat',
+    values='./deploy/local/librechat/values.yaml',
+)
+k8s_resource('librechat-librechat', labels=['librechat'], port_forwards=['12040:3080'])
+k8s_resource('librechat-mongodb', labels=['librechat'])
+k8s_resource('librechat-meilisearch', labels=['librechat'])
+
 # Docker builds
 docker_build('claims-voice-agent', context='./agents/claims-voice-agent')
 docker_build('customer-database', context='./mcp-servers/customer-database')
