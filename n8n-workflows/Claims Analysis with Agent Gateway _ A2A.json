@@ -10,32 +10,13 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -688,
-        -160
+        0,
+        0
       ],
-      "id": "21117903-a554-4d83-b3e8-8b0794138c80",
+      "id": "e6a17c9d-53e5-42ff-be20-4bdab32c8d24",
       "name": "Phone call finished",
       "webhookId": "e509ca9b-eb4f-4fe2-a3ee-4e314289c20e",
       "notes": "Dieser Node wartet auf eingehende POST-Anfragen an die generierte URL. Die im Body der Anfrage gesendeten Daten (z.B. die id des Transkripts) stehen dann im Workflow für die nächsten Schritte zur Verfügung."
-    },
-    {
-      "parameters": {
-        "message": "=Hier ist das zu analysierende Transkript:\n{{ $json.body.conversation_flow.full_conversation }}\n\n"
-      },
-      "type": "CUSTOM.a2a",
-      "typeVersion": 1,
-      "position": [
-        -240,
-        -160
-      ],
-      "id": "2adc8ee9-270e-4b83-988f-6acf47551010",
-      "name": "Claims Analysis",
-      "credentials": {
-        "a2aApi": {
-          "id": "WNkE8Vnk62jHVzfa",
-          "name": "A2A account"
-        }
-      }
     },
     {
       "parameters": {
@@ -54,11 +35,30 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        160,
-        -160
+        848,
+        0
       ],
-      "id": "091b5f42-b71e-4b54-80f2-0173d90c30a4",
+      "id": "fecb2eb7-1170-4aa0-b29c-1ef5220143dc",
       "name": "Store claim data"
+    },
+    {
+      "parameters": {
+        "message": "=Hier ist das zu analysierende Transkript:\n{{ $json.body.conversation_flow.full_conversation }}\n\n"
+      },
+      "type": "@agentic-layer/n8n-nodes-a2a.a2a",
+      "typeVersion": 1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "838fbab7-960c-4c1d-998e-ed07f77f02a3",
+      "name": "Claims Analysis (A2A)",
+      "credentials": {
+        "a2aApi": {
+          "id": "0aQUkB9uYdny20te",
+          "name": "A2A account"
+        }
+      }
     }
   ],
   "pinData": {
@@ -461,18 +461,23 @@
     ]
   },
   "connections": {
+    "Store claim data": {
+      "main": [
+        []
+      ]
+    },
     "Phone call finished": {
       "main": [
         [
           {
-            "node": "Claims Analysis",
+            "node": "Claims Analysis (A2A)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Claims Analysis": {
+    "Claims Analysis (A2A)": {
       "main": [
         [
           {
@@ -482,22 +487,17 @@
           }
         ]
       ]
-    },
-    "Store claim data": {
-      "main": [
-        []
-      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "7d0c739c-999b-47e4-89d1-3dd17f9479fe",
+  "versionId": "790d96e9-8587-4b7f-abeb-8e7388a372e2",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "5e9abefdcd5a4b9024ca9287ddea48e94f6d3e20694f7b18d087e54a3d9ca807"
+    "instanceId": "05fa260ba9cc8144fd55482b753daedf7421cc39a8a4c53f7269d0362c04785f"
   },
-  "id": "AuwsxNo9nVVnH8fu",
+  "id": "saBUtOZOKDHZVkMU",
   "tags": []
 }
