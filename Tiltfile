@@ -35,7 +35,7 @@ k8s_kind(
 
 # Docker builds
 docker_build('claims-voice-agent', context='./agents/claims-voice-agent')
-docker_build('customer-database',  context='./mcp-servers/customer-database')
+docker_build('customer-database', context='./mcp-servers/customer-database')
 docker_build('showcase-claims-frontend', context='./frontend')
 
 # Apply Kubernetes manifests
@@ -70,16 +70,16 @@ load('ext://secret', 'secret_from_dict')
 
 # Create secret for voice agent, which is not yet using the ai-gateway
 k8s_yaml(secret_from_dict(
-    name = "api-key-secrets",
-    namespace = "showcase-insurance-claims",
+    name="api-key-secrets",
+    namespace="showcase-insurance-claims",
     # The ai-gateway expects the API key to be called <provider>_API_KEY
-    inputs = { "GEMINI_API_KEY": google_api_key }
+    inputs={"GEMINI_API_KEY": google_api_key}
 ))
 
 # Create secret for ai-gateway
 k8s_yaml(secret_from_dict(
-    name = "api-key-secrets",
-    namespace = "ai-gateway",
+    name="api-key-secrets",
+    namespace="ai-gateway",
     # The ai-gateway expects the API key to be called <provider>_API_KEY
-    inputs = { "GEMINI_API_KEY": google_api_key, "OPENAI_API_KEY": openai_api_key }
+    inputs={"GEMINI_API_KEY": google_api_key, "OPENAI_API_KEY": openai_api_key}
 ))
