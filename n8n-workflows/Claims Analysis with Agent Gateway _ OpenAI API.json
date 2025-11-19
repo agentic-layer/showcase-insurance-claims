@@ -10,10 +10,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -688,
-        -160
+        0,
+        0
       ],
-      "id": "0555ed81-b28c-4710-9de7-5741b8b9f014",
+      "id": "4d532199-3a19-4a5d-a5ae-31aea6d41ea1",
       "name": "Phone call finished",
       "webhookId": "3ba88367-e673-49e2-9217-b3fea008bf4b",
       "notes": "Dieser Node wartet auf eingehende POST-Anfragen an die generierte URL. Die im Body der Anfrage gesendeten Daten (z.B. die id des Transkripts) stehen dann im Workflow für die nächsten Schritte zur Verfügung."
@@ -39,29 +39,39 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        -288,
-        -160
+        352,
+        0
       ],
-      "id": "67f24a8c-27a4-4549-b72c-dc6cee8708ee",
+      "id": "eda27eee-d61c-4dcc-8f56-598126fe1bee",
       "name": "Claims Analysis",
       "credentials": {
         "openAiApi": {
-          "id": "NmKTfR5HJg6iKIPt",
-          "name": "Agent Gateway - Claims Agent"
+          "id": "Z3FZScrAhli8ekja",
+          "name": "Agent Gateway - claims-analysis-agent"
         }
       }
     },
     {
       "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fc0b89c0-93da-465d-80be-2f689df29a2d",
+              "name": "message.content",
+              "value": "={{ $json.message.content }}",
+              "type": "object"
+            }
+          ]
+        },
         "options": {}
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        144,
-        -160
+        832,
+        0
       ],
-      "id": "b83095e4-232c-4c3a-aed4-73dc76f15fb8",
+      "id": "c3a136e5-5587-4dc3-bfc5-61ff84714d07",
       "name": "Store claim data"
     }
   ],
@@ -492,11 +502,11 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "5fedc634-3c89-4049-9aa6-e49b27f44872",
+  "versionId": "322cc488-412c-4341-823a-5e29973cb14d",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "5e9abefdcd5a4b9024ca9287ddea48e94f6d3e20694f7b18d087e54a3d9ca807"
+    "instanceId": "cb7b4f5455005bb0570cc228c94a057566d38ed1be47177df6a0707ca1e9a1de"
   },
-  "id": "9oyJ3mol0zVb2bpF",
+  "id": "djO6bPZWbwW6C2xA",
   "tags": []
 }
