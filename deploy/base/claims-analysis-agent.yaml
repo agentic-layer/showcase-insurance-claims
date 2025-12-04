@@ -6,7 +6,7 @@ spec:
   exposed: true
   framework: google-adk
   # Tilt requires an image to be set here, even though the agent-runtime would have set it based on the framework.
-  image: "ghcr.io/agentic-layer/agent-template-adk:0.4.0"
+  image: "ghcr.io/agentic-layer/agent-template-adk:0.5.2"
   description: "Analyze insurance claim transcripts and extract structured data."
   instruction: |-
     ANALYSE-REGELN:
