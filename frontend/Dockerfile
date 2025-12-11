@@ -1,5 +1,5 @@
 # Stage 1: Build React frontend
-FROM node:22-alpine AS frontend-builder
+FROM node:22-alpine3.22 AS frontend-builder
 WORKDIR /app/
 
 # Copy package files
@@ -13,7 +13,7 @@ COPY . ./
 RUN npm run build
 
 # Stage 2: Serve the application with Nginx
-FROM nginx:alpine
+FROM nginx:alpine3.22
 
 # Install gettext for envsubst command
 RUN apk add --no-cache gettext
