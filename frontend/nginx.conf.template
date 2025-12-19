@@ -7,8 +7,16 @@ server {
     add_header X-Frame-Options ${FRAME_OPTIONS};
     add_header X-Content-Type-Options nosniff;
 
-    # Keep this section for future HTTP API needs if required
-    # Currently the frontend uses WebSocket communication via /ws/ endpoint
+    # Proxy for Claims API to avoid CORS
+    location /api/claims {
+        rewrite ^/api/claims(.*)$ /api/claims$1 break;
+        proxy_pass ${CLAIMS_API_URL};
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
 
     # Proxy WebSocket connections to the claims-voice-agent
     location /ws/ {
@@ -30,4 +38,3 @@ server {
         add_header Content-Type text/plain;
     }
 }
-

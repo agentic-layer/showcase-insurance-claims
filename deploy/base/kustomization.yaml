@@ -8,3 +8,6 @@ resources:
   - showcase-claims-frontend.yaml
   - customer-database.yaml
   - insurance-claims-workforce.yaml
+  - mongodb.yaml
+  - claims-database.yaml
+  - claims-api.yaml

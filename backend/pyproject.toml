@@ -1,0 +1,15 @@
+[project]
+name = "claims-api"
+version = "0.1.0"
+description = "FastAPI backend for insurance claims"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "pymongo>=4.15.5",
+    "uvicorn[standard]>=0.32.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+

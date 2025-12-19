@@ -1,20 +1,19 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ClaimsProvider } from '@/components/ClaimsProvider';
 import HeroSection from '@/components/HeroSection';
 import ChatInterface from '@/components/ChatInterface';
-
 import CustomerDataTable from '@/components/CustomerDataTable';
+import ClaimsTable from '@/components/ClaimsTable';
 import Footer from '@/components/Footer';
 
 const DashboardPage = () => {
   const [showCustomerData, setShowCustomerData] = useState(false);
+  const [showClaims, setShowClaims] = useState(false);
 
   return (
     <ClaimsProvider>
       <div className="min-h-screen bg-background">
-        {/* Add logout button to header */}
         <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
           <div className="container mx-auto px-6 h-16 flex items-center justify-between">
             {/* Logo */}
@@ -26,7 +25,7 @@ const DashboardPage = () => {
               />
               <span className="ml-2 font-semibold text-lg">Claims Agent</span>
             </div>
-            
+
             {/* Navigation */}
             <div className="flex items-center space-x-4">
               <nav className="hidden md:flex space-x-8">
@@ -37,10 +36,10 @@ const DashboardPage = () => {
             </div>
           </div>
         </header>
-        
+
         <main>
           <HeroSection />
-          
+
           {/* Chat Interface */}
           <section id="showcase" className="py-8 px-6">
             <div className="container mx-auto max-w-4xl">
@@ -52,14 +51,21 @@ const DashboardPage = () => {
                   Sprechen Sie direkt mit unserem KI-gestützten Voice Agent zur Datenerfassung.
                 </p>
               </div>
-              
+
               <ChatInterface />
             </div>
           </section>
-          
-          {/* Toggle Button for Customer Data */}
+
+          {/* Toggle Buttons */}
           <div className="container mx-auto px-6 py-4">
-            <div className="flex justify-center">
+            <div className="flex justify-center gap-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowClaims(!showClaims)}
+                className="px-6 py-2"
+              >
+                {showClaims ? 'Schadensmeldungen ausblenden' : 'Schadensmeldungen anzeigen'}
+              </Button>
               <Button
                 variant="outline"
                 onClick={() => setShowCustomerData(!showCustomerData)}
@@ -70,13 +76,20 @@ const DashboardPage = () => {
             </div>
           </div>
 
+          {/* Claims Table */}
+          {showClaims && (
+            <div className="container mx-auto px-6 pb-12">
+              <ClaimsTable />
+            </div>
+          )}
+
           {/* Customer Data Table */}
           {showCustomerData && (
             <div className="container mx-auto px-6 pb-12">
               <CustomerDataTable />
             </div>
           )}
-          
+
         </main>
         <Footer />
       </div>
