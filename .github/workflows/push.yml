@@ -31,6 +31,10 @@ jobs:
             context: mcp-servers/customer-database
           - image_name: showcase-claims-frontend
             context: frontend
+          - image_name: claims-database
+            context: mcp-servers/claims-database
+          - image_name: claims-api
+            context: backend
 
     steps:
       - name: 'Checkout'
