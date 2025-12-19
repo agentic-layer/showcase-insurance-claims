@@ -57,7 +57,7 @@ k8s_resource('claims-analysis-agent', labels=['showcase'], resource_deps=['agent
 k8s_resource('claims-voice-agent', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database'], port_forwards=['12010:8000'])
 k8s_resource('customer-database', labels=['showcase'], resource_deps=['agent-runtime'], port_forwards=['12020:8000'])
 k8s_resource('mongodb', labels=['showcase'], port_forwards=['12023:27017'])
-k8s_resource('claims-database', labels=['showcase'], resource_deps=['mongodb'], port_forwards=['12021:8000'])
+k8s_resource('claims-database', labels=['showcase'], resource_deps=['agent-runtime', 'mongodb'], port_forwards=['12021:8000'])
 k8s_resource('claims-api', labels=['showcase'], resource_deps=['mongodb'], port_forwards=['12022:8000'])
 k8s_resource('showcase-claims-frontend', labels=['showcase'], resource_deps=['claims-voice-agent', 'claims-api'], port_forwards=['12030:80'])
 

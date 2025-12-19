@@ -147,10 +147,10 @@ class LiveEventMonitorPlugin(BasePlugin):
             has_speech = event.output_transcription and event.output_transcription.text
 
             if has_text or has_speech:
-                text = event.output_transcription.text if has_speech else None
+                text = event.output_transcription.text if (has_speech and event.output_transcription) else None
                 with self.tracer.start_as_current_span("after_model_callback") as span:
                     _set_model_callback_attributes(span, conversation_id, agent_name, text)
-                if has_speech:
+                if has_speech and event.output_transcription:
                     logger.info(f"Agent speech output: {event.output_transcription.text}")
 
         # Model thoughts
@@ -160,7 +160,7 @@ class LiveEventMonitorPlugin(BasePlugin):
                     logger.info(f"Model thoughts: {part.text}")
 
         # User speech transcriptions
-        if event.input_transcription:
+        if event.input_transcription and event.input_transcription.text:
             with self.tracer.start_as_current_span("before_agent_callback") as span:
                 _set_before_agent_attributes(span, conversation_id, agent_name)
 

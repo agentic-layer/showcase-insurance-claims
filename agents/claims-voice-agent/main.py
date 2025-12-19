@@ -5,7 +5,7 @@ import logging
 import os
 import warnings
 
-from agenticlayer.otel import setup_otel
+from agenticlayer.otel import setup_otel  # type: ignore[import-untyped]
 
 from agent import root_agent
 from agenticlayer.agent_to_a2a import to_a2a  # type: ignore[import-untyped]
