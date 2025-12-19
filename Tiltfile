@@ -44,6 +44,8 @@ helm_remote(
 # Docker builds
 docker_build('claims-voice-agent', context='./agents/claims-voice-agent')
 docker_build('customer-database', context='./mcp-servers/customer-database')
+docker_build('claims-database', context='./mcp-servers/claims-database')
+docker_build('claims-api', context='./backend')
 docker_build('showcase-claims-frontend', context='./frontend')
 
 # Apply Kubernetes manifests
@@ -51,10 +53,13 @@ k8s_yaml(kustomize('deploy/local'))
 
 # Showcase Components
 k8s_resource('insurance-claims-workforce', labels=['showcase'], resource_deps=['agent-runtime'], pod_readiness='ignore')
-k8s_resource('claims-analysis-agent', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database'], port_forwards=['12011:8000'])
+k8s_resource('claims-analysis-agent', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database', 'claims-database'], port_forwards=['12011:8000'])
 k8s_resource('claims-voice-agent', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database'], port_forwards=['12010:8000'])
 k8s_resource('customer-database', labels=['showcase'], resource_deps=['agent-runtime'], port_forwards=['12020:8000'])
-k8s_resource('showcase-claims-frontend', labels=['showcase'], resource_deps=['claims-voice-agent'], port_forwards=['12030:80'])
+k8s_resource('mongodb', labels=['showcase'], port_forwards=['12023:27017'])
+k8s_resource('claims-database', labels=['showcase'], resource_deps=['mongodb'], port_forwards=['12021:8000'])
+k8s_resource('claims-api', labels=['showcase'], resource_deps=['mongodb'], port_forwards=['12022:8000'])
+k8s_resource('showcase-claims-frontend', labels=['showcase'], resource_deps=['claims-voice-agent', 'claims-api'], port_forwards=['12030:80'])
 
 # Agentic Layer Components
 k8s_resource('ai-gateway-litellm', labels=['agentic-layer'], resource_deps=['agent-runtime'], port_forwards=['12001:4000'])

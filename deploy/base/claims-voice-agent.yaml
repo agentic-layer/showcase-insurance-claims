@@ -7,7 +7,7 @@ spec:
   image: claims-voice-agent:latest
   env:
     - name: LOGLEVEL
-      value: "DEBUG"
+      value: "INFO"
     - name: OTEL_SERVICE_NAME
       value: claims-voice-agent
     - name: AGENT_OTEL_ENABLED
@@ -17,6 +17,9 @@ spec:
         secretKeyRef:
           name: api-key-secrets
           key: GEMINI_API_KEY
+    # Use env variable instead of subagent because of problems with audio <--> non-audio A2A communications with subagents
+    - name: CLAIMS_ANALYSIS_AGENT_URL
+      value: http://claims-analysis-agent:8000
   envFrom:
     - configMapRef:
         name: otel-tempo-config

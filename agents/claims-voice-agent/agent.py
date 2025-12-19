@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from typing import AsyncGenerator
 from zoneinfo import ZoneInfo
 
 from google.adk.agents import Agent
@@ -7,6 +8,7 @@ from google.adk.planners.built_in_planner import BuiltInPlanner
 from google.adk.tools.mcp_tool.mcp_session_manager import StreamableHTTPConnectionParams
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
 from google.genai import types
+from callbacks import before_tool_callback, after_tool_callback
 
 # Create MCP toolset for claims tools
 customer_database_toolset = MCPToolset(
@@ -15,15 +17,73 @@ customer_database_toolset = MCPToolset(
     ),
 )
 
+logger = logging.getLogger(__name__)
 
 def send_message(claim_data: str) -> dict:
     """Send claim data to process it further."""
-    logging.log(logging.INFO, "Sending claim data: {}".format(claim_data))
+    logger.info("Sending claim data: {}".format(claim_data))
     return {
         "status": "success",
         "message": "Claim data has been successfully submitted to the claims processing team.",
         "data_preview": claim_data[:100] + "..." if len(claim_data) > 100 else claim_data,
     }
+
+async def handle_claim(transcript: str) -> AsyncGenerator[dict, None]:
+    """
+    Submit the transcript to claims-analysis-agent for processing of the claim via A2A.
+
+    Args:
+        transcript: The full conversation transcript to analyze
+
+    Returns:
+        Dictionary with status and message
+    """
+    logger.info("Sending call transcript to claims-analysis-agent...")
+    logger.info(f"Transcript length: {len(transcript)} characters")
+
+    try:
+        # # Import here to avoid circular dependency
+        from main import get_claims_analysis_a2a_client
+        from a2a.types import Message, TextPart, Part as A2APart, Role
+        import uuid
+
+        # Get the A2A client instance
+        analysis_a2a_client = await get_claims_analysis_a2a_client()
+
+        # Create TextPart and wrap it in Part
+        text_part = TextPart(text=f"Analysiere bitte das folgende Transkript und erstelle eine Schadensmeldung:\n\n{transcript}")
+        message = Message(
+            message_id=str(uuid.uuid4()),
+            role=Role.user,
+            parts=[A2APart(root=text_part)],
+        )
+
+        yield {
+            "status": "info",
+            "message": "Transkript wird an den claims-analysis-agent gesendet..."
+        }
+
+        # send_message returns an AsyncIterator, we need to collect all events
+        response_parts = []
+        async for event in analysis_a2a_client.send_message(message):
+            logger.debug(f"Received event from claims-analysis-agent: {event}")
+            response_parts.append(str(event))
+
+        response_text = "\n".join(response_parts)
+        logger.info(f"Response from claims-analysis-agent: {response_text[:200]}...")
+
+        yield {
+            "status": "success",
+            "message": "Transcript wurde verarbeitet.",
+            "analysis_response": response_text
+        }
+    except Exception as e:
+        logger.error(f"Failed to send transcript to claims-analysis-agent: {e}", exc_info=True)
+        yield {
+            "status": "error",
+            "message": f"Fehler beim Senden an claims-analysis-agent: {str(e)}"
+        }
+        return
 
 
 root_agent = Agent(
@@ -66,48 +126,49 @@ root_agent = Agent(
            - Ask for birth date → verify against retrieved data
            - Never reveal the stored date to caller
            - If no match: Tell the customer the date you received and ask for clarification
-           - If times no match: terminate call, direct to customer service
+           - If multiple times no match: terminate call, direct to customer service
 
         5. **License Plate**
            - Ask for license plate of damaged vehicle
            - If there is information about one or more vehicles in the user data, ask if one of them is involved in the incident, if not ask for license plate
-           - Acknowledge: "Notiert"
 
         6. **Incident Date/Time**
            - Ask when incident occurred
            - If relative date ("gestern", "vorgestern"): use current date to calculate
            - Current date is: {datetime.now(tz=ZoneInfo("Europe/Berlin")).strftime("%A - %d.%m.%Y, %H:%M Uhr, %Z")}
            - Validate date is not in the future (date as well as time, e.g. if it is 10 am the incident can't happen at 4 pm at the same day) - if future date, ask for clarification
-           - ONLY repeat calculated dates: "Verstanden, den [specific date]"
+           - ONLY repeat calculated dates
 
         7. **Location**
            - Ask where incident occurred (city and street/address)
-           - Acknowledge: "Verstanden"
 
         8. **Incident Description**
            - Ask what happened
-           - Acknowledge: "Notiert"
 
         9. **Driver Identification**
            - Ask who was driving
-           - Acknowledge: "Verstanden"
 
         10. **Personal Injuries**
            - Ask if anyone was injured
-           - Acknowledge: "Notiert"
 
         11. **Vehicle Damage**
             - Ask for description of vehicle damage
-            - Acknowledge: "Verstanden"
 
         12. **Summary & Confirmation**
             - Provide complete professional summary in natural German
             - Include ALL gathered information
             - Ask for final confirmation
 
-        13. **Claim Submission**
-            - Use send_message(data) with complete claim data
-            - Confirm submission and tell the customer that he can expect a confirmation shortly
+        13. **Submit to Claims Analysis**
+            - After user confirmation, call claims_analysis_agent with the full transcript through handle_claim(transcript)
+            - Pass the entire conversation (without tool calls) to the analysis agent
+            - The claims_analysis_agent will extract structured data and save it to the database
+            - Confirm to the user that the claim has been submitted successfully, but exclude the claim ID for privacy reasons
+            - The format of the transcript should be:
+                Agent: [utterance]
+                Caller: [utterance]
+                Agent: [utterance]
+                ...
 
         ## COMMUNICATION RULES
 
@@ -145,7 +206,9 @@ root_agent = Agent(
     description="Voice-enabled insurance claims agent that helps customers file insurance claims through natural conversation in German",
     tools=[
         customer_database_toolset,
-        send_message,
+        handle_claim,
     ],
     planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(include_thoughts=True)),
+    before_tool_callback=before_tool_callback,
+    after_tool_callback=after_tool_callback,
 )

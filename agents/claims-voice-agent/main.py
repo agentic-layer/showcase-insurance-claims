@@ -1,11 +1,15 @@
 import asyncio
 import base64
 import json
+import logging
 import os
 import warnings
 
+from agenticlayer.otel import setup_otel
+
 from agent import root_agent
 from agenticlayer.agent_to_a2a import to_a2a  # type: ignore[import-untyped]
+from callbacks import LiveEventMonitorPlugin
 from dotenv import load_dotenv
 from google.adk.agents import LiveRequestQueue
 from google.adk.agents.run_config import RunConfig, StreamingMode
@@ -20,12 +24,57 @@ from google.genai.types import (
 from starlette.responses import RedirectResponse
 from starlette.routing import Route, WebSocketRoute
 from starlette.websockets import WebSocket
+from a2a.client import A2ACardResolver, ClientFactory
+from a2a.client.client import ClientConfig
+from a2a.types import TransportProtocol
+import httpx
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
 load_dotenv()
 
 APP_NAME = "Claims Voice Agent"
+
+# Configure logging and OpenTelemetry
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+setup_otel()
+
+# Initialize A2A Client for claims-analysis-agent
+claims_analysis_agent_url = os.getenv("CLAIMS_ANALYSIS_AGENT_URL", "http://claims-analysis-agent:8000")
+claims_analysis_a2a_client = None
+claims_analysis_agent_card = None
+
+async def get_claims_analysis_a2a_client():
+    """Get or create the A2A client for claims-analysis-agent."""
+    global claims_analysis_a2a_client, claims_analysis_agent_card
+
+    if claims_analysis_a2a_client is None:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(timeout=30)) as client:
+            resolver = A2ACardResolver(
+                httpx_client=client,
+                base_url=claims_analysis_agent_url,
+            )
+            claims_analysis_agent_card = await resolver.get_agent_card()
+
+        # Create A2A client
+        httpx_client = httpx.AsyncClient(timeout=httpx.Timeout(timeout=60))
+        client_config = ClientConfig(
+            httpx_client=httpx_client,
+            streaming=False,
+            polling=False,
+            supported_transports=[TransportProtocol.jsonrpc],
+        )
+        client_factory = ClientFactory(config=client_config)
+        claims_analysis_a2a_client = client_factory.create(claims_analysis_agent_card)
+
+        logger.info(f"Initialized A2A client for claims-analysis-agent at {claims_analysis_agent_url}")
+
+    return claims_analysis_a2a_client
 
 
 async def start_agent_session(user_id, is_audio=False):
@@ -35,6 +84,9 @@ async def start_agent_session(user_id, is_audio=False):
     runner = InMemoryRunner(
         app_name=APP_NAME,
         agent=root_agent,
+        plugins=[
+            LiveEventMonitorPlugin(),
+        ],
     )
 
     # Create a Session
@@ -47,7 +99,6 @@ async def start_agent_session(user_id, is_audio=False):
     modality = "AUDIO" if is_audio else "TEXT"
     run_config = RunConfig(
         response_modalities=[modality],
-        session_resumption=types.SessionResumptionConfig(),
         speech_config=types.SpeechConfig(
             voice_config=types.VoiceConfig(
                 prebuilt_voice_config=types.PrebuiltVoiceConfig(
@@ -81,12 +132,12 @@ async def agent_to_client_messaging(websocket, live_events):
         async for event in live_events:
             event: Event
 
-            # Handle user input transcription chunks (send them as they come)
-            if event.content and event.content.role == "user":
-                if text := event.content.parts[0].text:
-                    print(f"[USER INPUT CHUNK]: {text}")
-                    # Send partial user transcription chunk
-                    user_message = {"mime_type": "text/plain", "data": text, "is_user_input": True}
+            # Handle user input transcription chunks
+            if event.input_transcription and event.partial:
+                transcribed_text = event.input_transcription.text
+                if transcribed_text:
+                    logger.debug(f"[USER INPUT TRANSCRIPTION (partial)]: {transcribed_text}")
+                    user_message = {"mime_type": "text/plain", "data": transcribed_text, "is_user_input": True}
                     await websocket.send_text(json.dumps(user_message))
                 continue
 
@@ -97,7 +148,16 @@ async def agent_to_client_messaging(websocket, live_events):
                     "interrupted": event.interrupted,
                 }
                 await websocket.send_text(json.dumps(message))
-                print(f"[AGENT TO CLIENT]: {message}")
+                logger.debug(f"[AGENT TO CLIENT]: {message}")
+                continue
+
+            # Send agent speech transcription chunks
+            if event.output_transcription and event.partial:
+                transcribed_text = event.output_transcription.text
+                if transcribed_text:
+                    message = {"mime_type": "text/plain", "data": transcribed_text}
+                    await websocket.send_text(json.dumps(message))
+                    logger.debug(f"[AGENT TO CLIENT]: transcribed speech (partial): {transcribed_text}")
                 continue
 
             # Read the Content and its first Part
@@ -112,20 +172,14 @@ async def agent_to_client_messaging(websocket, live_events):
                 if audio_data:
                     message = {"mime_type": "audio/pcm", "data": base64.b64encode(audio_data).decode("ascii")}
                     await websocket.send_text(json.dumps(message))
-                    print(f"[AGENT TO CLIENT]: audio/pcm: {len(audio_data)} bytes.")
+                    logger.debug(f"[AGENT TO CLIENT]: audio/pcm: {len(audio_data)} bytes.")
                     continue
-
-            # If it's text and a partial text, send it
-            if part.text and event.partial:
-                message = {"mime_type": "text/plain", "data": part.text}
-                await websocket.send_text(json.dumps(message))
-                print(f"[AGENT TO CLIENT]: text/plain: {message}")
     except WebSocketDisconnect:
         # Normal disconnection - client closed the connection
         pass
     except Exception as e:
         # Log other exceptions but don't crash
-        print(f"Error in agent_to_client_messaging: {e}")
+        logger.error(f"Error in agent_to_client_messaging: {e}")
 
 
 async def client_to_agent_messaging(websocket, live_request_queue):
@@ -145,7 +199,7 @@ async def client_to_agent_messaging(websocket, live_request_queue):
                 # Send a text message
                 content = Content(role="user", parts=[Part.from_text(text=data)])
                 live_request_queue.send_content(content=content)
-                print(f"[CLIENT TO AGENT]: {data}")
+                logger.debug(f"[CLIENT TO AGENT]: {data}")
             elif mime_type == "audio/pcm":
                 # Send an audio data
                 decoded_data = base64.b64decode(data)
@@ -175,7 +229,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
     # Wait for client connection
     await websocket.accept()
-    print(f"Client #{user_id} connected, audio mode: {is_audio}")
+    logger.info(f"[WS] Client #{user_id} connected (WebSocket ready, session not started yet)")
 
     # Start agent session
     user_id_str = str(user_id)
@@ -193,7 +247,7 @@ async def websocket_endpoint(websocket: WebSocket):
     live_request_queue.close()
 
     # Disconnected
-    print(f"Client #{user_id} disconnected")
+    logger.info(f"Client #{user_id} disconnected")
 
 
 # Create A2A app and add custom routes

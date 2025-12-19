@@ -37,6 +37,9 @@ spec:
             # The URL for the WebSocket backend
             - name: WEBSOCKET_URL
               value: "http://claims-voice-agent.showcase-insurance-claims.svc.cluster.local:8000"
+            # The URL for the Claims REST API (for nginx proxy)
+            - name: CLAIMS_API_URL
+              value: "http://claims-api.showcase-insurance-claims.svc.cluster.local:8000"
           resources:
             requests:
               memory: "64Mi"
@@ -64,4 +67,3 @@ spec:
       port: 80
       targetPort: 80
   type: ClusterIP
-
