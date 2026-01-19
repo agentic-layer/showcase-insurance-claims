@@ -203,7 +203,7 @@ const ChatInterface = forwardRef<ChatInterfaceRef>((props, ref) => {
           Chat mit Claims Agent
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
             <ScrollArea className="flex-1 px-6 h-0" ref={scrollAreaRef}>
               <div className="space-y-4 py-4">
@@ -215,8 +215,8 @@ const ChatInterface = forwardRef<ChatInterfaceRef>((props, ref) => {
                     }`}
                   >
                     <div className={`p-2 rounded-full ${
-                      message.role === 'user' 
-                        ? 'bg-primary text-primary-foreground' 
+                      message.role === 'user'
+                        ? 'bg-primary text-primary-foreground'
                         : 'bg-accent text-accent-foreground'
                     }`}>
                       {message.role === 'user' ? (
@@ -263,7 +263,7 @@ const ChatInterface = forwardRef<ChatInterfaceRef>((props, ref) => {
                 )}
               </div>
             </ScrollArea>
-            
+
             <div className="p-6 border-t border-border">
               {conversationState === 'initial' && (
                 <Button

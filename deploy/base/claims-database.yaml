@@ -1,0 +1,17 @@
+apiVersion: runtime.agentic-layer.ai/v1alpha1
+kind: ToolServer
+metadata:
+  name: claims-database
+  namespace: showcase-insurance-claims
+spec:
+  protocol: mcp
+  transportType: http
+  image: claims-database:latest
+  port: 8000
+  env:
+    - name: LOGLEVEL
+      value: "INFO"
+    - name: MONGODB_URL
+      value: "mongodb://mongodb.showcase-insurance-claims.svc.cluster.local:27017"
+    - name: MONGODB_DATABASE
+      value: "claims"
