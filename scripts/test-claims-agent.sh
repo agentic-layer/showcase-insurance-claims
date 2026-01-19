@@ -43,13 +43,13 @@ echo ""
 # Function to test Agent Gateway (OpenAI-compatible API)
 test_openai_api() {
     echo -e "${GREEN}[1] Testing via Agent Gateway - OpenAI-compatible API${NC}"
-    echo -e "    Endpoint: ${AGENT_GATEWAY_URL}/claims-analysis-agent/chat/completions"
+    echo -e "    Endpoint: ${AGENT_GATEWAY_URL}/chat/completions"
     echo ""
 
-    curl -vfs "${AGENT_GATEWAY_URL}/claims-analysis-agent/chat/completions" \
+    curl -vfs "${AGENT_GATEWAY_URL}/chat/completions" \
         -H "Content-Type: application/json" \
         -d "$(jq -n --arg transcript "$TRANSCRIPT" '{
-            "model": "claims-analysis-agent",
+            "model": "showcase-insurance-claims/claims-analysis-agent",
             "messages": [
                 {
                     "role": "user",
