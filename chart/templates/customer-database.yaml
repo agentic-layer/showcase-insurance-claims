@@ -1,0 +1,12 @@
+apiVersion: runtime.agentic-layer.ai/v1alpha1
+kind: ToolServer
+metadata:
+  name: customer-database
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "insurance-claims-showcase.labels" . | nindent 4 }}
+spec:
+  protocol: {{ .Values.customerDatabase.protocol }}
+  transportType: {{ .Values.customerDatabase.transportType }}
+  image: {{ .Values.images.customerDatabase.repository }}:{{ .Values.images.customerDatabase.tag }}
+  port: {{ .Values.customerDatabase.port }}

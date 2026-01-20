@@ -1,9 +1,0 @@
-apiVersion: runtime.agentic-layer.ai/v1alpha1
-kind: ToolServer
-metadata:
-  name: customer-database
-spec:
-  protocol: mcp
-  transportType: http
-  image: customer-database:latest
-  port: 8000

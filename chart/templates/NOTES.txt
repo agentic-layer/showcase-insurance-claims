@@ -1,0 +1,54 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Release: {{ .Release.Name }}
+Namespace: {{ .Values.namespace }}
+
+Resources installed:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• Namespace: {{ .Values.namespace }}
+• Agents:
+  - claims-analysis-agent (exposed via Agent Gateway)
+  - claims-voice-agent (WebSocket-based voice agent)
+• ToolServer:
+  - customer-database (MCP server)
+• AgenticWorkforce:
+  - insurance-claims-workforce
+• Frontend:
+  - showcase-claims-frontend (Deployment + Service)
+
+Access the Frontend:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+To access the frontend application, use port-forwarding:
+
+  kubectl port-forward -n {{ .Values.namespace }} svc/showcase-claims-frontend 8080:80
+
+Then visit: http://localhost:8080
+
+IMPORTANT: External Dependencies
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This chart requires the following external resources to exist:
+
+1. Agentic Layer CRDs must be installed:
+   - Agent (runtime.agentic-layer.ai/v1alpha1)
+   - ToolServer (runtime.agentic-layer.ai/v1alpha1)
+   - AgenticWorkforce (runtime.agentic-layer.ai/v1alpha1)
+
+2. ConfigMap: {{ .Values.externalDependencies.otelConfig.name }}
+   Purpose: OpenTelemetry Tempo configuration
+   Namespace: {{ .Values.externalDependencies.otelConfig.namespace }}
+
+3. Secret: {{ .Values.externalDependencies.apiKeySecret.name }}
+   Purpose: Google Gemini API key
+   Namespace: {{ .Values.externalDependencies.apiKeySecret.namespace }}
+   Required key: {{ .Values.externalDependencies.apiKeySecret.key }}
+
+Verify Installation:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Check that all resources are running:
+
+  kubectl get agents,toolservers,agenticworkforces,deployments,services -n {{ .Values.namespace }}
+
+For more information:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Documentation: https://docs.agentic-layer.ai/
+Repository: https://github.com/agentic-layer/showcase-insurance-claims

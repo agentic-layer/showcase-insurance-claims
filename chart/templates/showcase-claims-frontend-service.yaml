@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: showcase-claims-frontend
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "insurance-claims-showcase.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: showcase-claims-frontend
+  ports:
+    - protocol: TCP
+      port: {{ .Values.frontend.nginx.port }}
+      targetPort: {{ .Values.frontend.nginx.port }}
+  type: ClusterIP

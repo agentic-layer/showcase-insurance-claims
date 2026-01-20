@@ -1,0 +1,26 @@
+apiVersion: runtime.agentic-layer.ai/v1alpha1
+kind: Agent
+metadata:
+  name: claims-voice-agent
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "insurance-claims-showcase.labels" . | nindent 4 }}
+spec:
+  framework: {{ .Values.claimsVoiceAgent.framework }}
+  image: {{ .Values.images.voiceAgent.repository }}:{{ .Values.images.voiceAgent.tag }}
+  env:
+    - name: LOGLEVEL
+      value: {{ .Values.config.logLevel | quote }}
+    - name: OTEL_SERVICE_NAME
+      value: claims-voice-agent
+    - name: AGENT_OTEL_ENABLED
+      value: {{ .Values.config.otelEnabled | quote }}
+    - name: GOOGLE_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Values.externalDependencies.apiKeySecret.name }}
+          key: {{ .Values.externalDependencies.apiKeySecret.key }}
+  envFrom:
+    - configMapRef:
+        name: {{ .Values.externalDependencies.otelConfig.name }}
+        optional: {{ .Values.externalDependencies.otelConfig.optional }}
