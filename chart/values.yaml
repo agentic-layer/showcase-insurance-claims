@@ -1,0 +1,100 @@
+# Default values for insurance-claims-showcase
+
+# Namespace for all resources
+namespace: showcase-insurance-claims
+
+# Image configurations
+images:
+  # Claims voice agent (custom implementation)
+  voiceAgent:
+    repository: ghcr.io/agentic-layer/claims-voice-agent
+    tag: latest
+    pullPolicy: Always
+
+  # Frontend React application
+  frontend:
+    repository: ghcr.io/agentic-layer/showcase-claims-frontend
+    tag: latest
+    pullPolicy: Always
+
+  # Customer database MCP server
+  customerDatabase:
+    repository: ghcr.io/agentic-layer/customer-database
+    tag: latest
+    pullPolicy: Always
+
+  # Template-based ADK agent (used by claims-analysis-agent)
+  agentTemplateAdk:
+    repository: ghcr.io/agentic-layer/agent-template-adk
+    tag: 0.5.2
+    pullPolicy: IfNotPresent
+
+# Common configuration for agents
+config:
+  logLevel: DEBUG
+  otelEnabled: true
+  # Model for claims-analysis-agent (via AI Gateway)
+  model: gemini/gemini-2.5-flash-lite
+
+# Claims Analysis Agent configuration
+claimsAnalysisAgent:
+  exposed: true
+  framework: google-adk
+  description: "Analyze insurance claim transcripts and extract structured data."
+
+# Claims Voice Agent configuration
+claimsVoiceAgent:
+  framework: google-adk
+
+# Customer Database ToolServer configuration
+customerDatabase:
+  protocol: mcp
+  transportType: http
+  port: 8000
+
+# Agentic Workforce configuration
+agenticWorkforce:
+  name: "Insurance Claims Workforce"
+  description: "A workforce to demonstrate handling of insurance claims"
+  owner: "user-name@example.com"
+  tags:
+    - insurance
+    - claims
+  entryPointAgents:
+    - claims-analysis-agent
+
+# Frontend configuration
+frontend:
+  replicas: 1
+  resources:
+    requests:
+      memory: 64Mi
+      cpu: 250m
+    limits:
+      memory: 128Mi
+      cpu: 500m
+  nginx:
+    port: 80
+    frameOptions: SAMEORIGIN
+  websocketUrl: "http://claims-voice-agent.showcase-insurance-claims.svc.cluster.local:8000"
+  readinessProbe:
+    path: /health
+    port: 80
+    initialDelaySeconds: 5
+    periodSeconds: 10
+  initContainer:
+    image: busybox:1.28
+
+# External dependencies (must exist before installing this chart)
+# These are NOT created by this chart - they must be provisioned separately
+externalDependencies:
+  # OpenTelemetry configuration
+  otelConfig:
+    name: otel-tempo-config
+    namespace: showcase-insurance-claims
+    optional: true
+  # API keys (GEMINI_API_KEY)
+  apiKeySecret:
+    name: api-key-secrets
+    namespace: showcase-insurance-claims
+    key: GEMINI_API_KEY

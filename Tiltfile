@@ -46,7 +46,21 @@ docker_build('claims-voice-agent', context='./agents/claims-voice-agent')
 docker_build('customer-database', context='./mcp-servers/customer-database')
 docker_build('showcase-claims-frontend', context='./frontend')
 
-# Apply Kubernetes manifests
+# Install base resources via Helm chart (local development)
+# Override image repositories to use local Tilt-built images (without registry prefix)
+k8s_yaml(helm(
+    'chart',
+    name='insurance-claims-showcase',
+    namespace='showcase-insurance-claims',
+    values=['chart/values.yaml'],
+    set=[
+        'images.voiceAgent.repository=claims-voice-agent',
+        'images.customerDatabase.repository=customer-database',
+        'images.frontend.repository=showcase-claims-frontend',
+    ],
+))
+
+# Install local-only resources via Kustomize (n8n, observability, LGTM)
 k8s_yaml(kustomize('deploy/local'))
 
 # Showcase Components

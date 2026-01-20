@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: showcase-claims-frontend
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "insurance-claims-showcase.labels" . | nindent 4 }}
+    app: showcase-claims-frontend
+spec:
+  replicas: {{ .Values.frontend.replicas }}
+  selector:
+    matchLabels:
+      app: showcase-claims-frontend
+  template:
+    metadata:
+      labels:
+        app: showcase-claims-frontend
+    spec:
+      # The init container now only waits for the claims-voice-agent service.
+      initContainers:
+        - name: wait-for-services
+          image: {{ .Values.frontend.initContainer.image }}
+          command:
+            - sh
+            - -c
+            - until nslookup claims-voice-agent.{{ .Values.namespace }}.svc.cluster.local; do echo 'waiting for voice agent service...'; sleep 2; done;
+      containers:
+        - name: showcase-claims-frontend
+          image: {{ .Values.images.frontend.repository }}:{{ .Values.images.frontend.tag }}
+          imagePullPolicy: {{ .Values.images.frontend.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.frontend.nginx.port }}
+          env:
+            - name: NGINX_PORT
+              value: {{ .Values.frontend.nginx.port | quote }}
+            - name: FRAME_OPTIONS
+              value: {{ .Values.frontend.nginx.frameOptions | quote }}
+            # The URL for the WebSocket backend
+            - name: WEBSOCKET_URL
+              value: {{ .Values.frontend.websocketUrl | quote }}
+          resources:
+            {{- toYaml .Values.frontend.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.frontend.readinessProbe.path }}
+              port: {{ .Values.frontend.readinessProbe.port }}
+            initialDelaySeconds: {{ .Values.frontend.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.frontend.readinessProbe.periodSeconds }}

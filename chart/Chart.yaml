@@ -1,0 +1,16 @@
+apiVersion: v2
+name: showcase-insurance-claims
+description: Insurance Claims Processing Showcase for Agentic Layer
+type: application
+version: 0.1.0
+appVersion: 0.1.0
+home: https://github.com/agentic-layer/showcase-insurance-claims
+maintainers:
+  - name: Agentic Layer Team
+    url: https://docs.agentic-layer.ai/
+keywords:
+  - agentic-layer
+  - insurance
+  - claims-processing
+  - ai-agents
+  - mcp
