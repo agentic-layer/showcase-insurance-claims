@@ -26,7 +26,7 @@ spec:
             - until nslookup claims-voice-agent.{{ .Values.namespace }}.svc.cluster.local; do echo 'waiting for voice agent service...'; sleep 2; done;
       containers:
         - name: showcase-claims-frontend
-          image: {{ .Values.images.frontend.image }}:{{ .Values.images.frontend.tag }}
+          image: {{ .Values.images.frontend.repository }}:{{ .Values.images.frontend.tag }}
           ports:
             - containerPort: 80
           env:

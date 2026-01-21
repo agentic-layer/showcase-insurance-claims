@@ -54,9 +54,11 @@ k8s_yaml(helm(
     namespace='showcase-insurance-claims',
     values=['chart/values.yaml'],
     set=[
-        'images.voiceAgent.image=claims-voice-agent',
-        'images.customerDatabase.image=customer-database',
-        'images.frontend.image=frontend',
+        'images.voiceAgent.repository=claims-voice-agent',
+        'images.customerDatabase.repository=customer-database',
+        'images.frontend.repository=frontend',
+        'images.agentTemplateAdk.repository=ghcr.io/agentic-layer/agent-template-adk',
+        'images.agentTemplateAdk.tag=0.5.2',
     ],
 ))
 

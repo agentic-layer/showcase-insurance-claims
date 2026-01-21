@@ -7,23 +7,23 @@ namespace: showcase-insurance-claims
 images:
   # Claims voice agent (custom implementation)
   voiceAgent:
-    image: ghcr.io/agentic-layer/showcase-insurance-claims-voice-agent
+    repository: ghcr.io/agentic-layer/showcase-insurance-claims-voice-agent
     tag: latest
 
   # Frontend React application
   frontend:
-    image: ghcr.io/agentic-layer/showcase-insurance-claims-frontend
+    repository: ghcr.io/agentic-layer/showcase-insurance-claims-frontend
     tag: latest
 
   # Customer database MCP server
   customerDatabase:
-    image: ghcr.io/agentic-layer/showcase-insurance-claims-customer-database
+    repository: ghcr.io/agentic-layer/showcase-insurance-claims-customer-database
     tag: latest
 
-  # Template-based ADK agent (used by claims-analysis-agent)
+  # Template-based ADK agent (keep empty to use default from agentic-layer)
   agentTemplateAdk:
-    image: ghcr.io/agentic-layer/agent-template-adk
-    tag: 0.5.2
+    repository: ''
+    tag: ''
 
 # Common configuration for agents
 config:

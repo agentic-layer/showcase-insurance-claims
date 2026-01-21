@@ -8,5 +8,5 @@ metadata:
 spec:
   protocol: mcp
   transportType: http
-  image: {{ .Values.images.customerDatabase.image }}:{{ .Values.images.customerDatabase.tag }}
+  image: {{ .Values.images.customerDatabase.repository }}:{{ .Values.images.customerDatabase.tag }}
   port: 8000

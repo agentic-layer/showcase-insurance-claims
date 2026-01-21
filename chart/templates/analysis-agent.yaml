@@ -8,9 +8,9 @@ metadata:
 spec:
   exposed: true
   framework: google-adk
-  {{- if and .Values.images.agentTemplateAdk.image .Values.images.agentTemplateAdk.tag }}
+  {{- if and .Values.images.agentTemplateAdk.repository .Values.images.agentTemplateAdk.tag }}
   # Tilt requires an image to be set here, even though the agent-runtime would have set it based on the framework.
-  image: {{ .Values.images.agentTemplateAdk.image }}:{{ .Values.images.agentTemplateAdk.tag }}
+  image: {{ .Values.images.agentTemplateAdk.repository }}:{{ .Values.images.agentTemplateAdk.tag }}
   {{- end }}
   description: "Analyze insurance claim transcripts and extract structured data."
   instruction: |-
