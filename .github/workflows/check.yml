@@ -1,10 +1,3 @@
-#
-# GitHub Action: Check
-#
-# This workflow is triggered on pushes to main and renovate branches, as well as
-# pull requests. It runs backend checks and validates Docker builds without
-# pushing images to ensure code quality.
-#
 name: Check
 
 on:
