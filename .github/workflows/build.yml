@@ -90,9 +90,18 @@ jobs:
       - name: Determine Chart Version
         id: version
         run: |
-          # Extract semver from git tag (e.g., v1.2.3 → 1.2.3)
-          VERSION="${{ github.ref_name }}"
-          VERSION="${VERSION#v}"  # Remove 'v' prefix
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            # For tags: use semver (e.g., v1.2.3 → 1.2.3)
+            VERSION="${{ github.ref_name }}"
+            VERSION="${VERSION#v}"  # Remove 'v' prefix
+          else
+            # For branches/PRs: use pre-release version (e.g., 0.0.0-main-abc1234)
+            GIT_BRANCH="${{ github.ref_name }}"
+            GIT_SHA="${{ github.sha }}"
+            # Replace slashes with dashes for branch names (e.g., feature/foo → feature-foo)
+            GIT_BRANCH="${GIT_BRANCH//\//-}"
+            VERSION="0.0.0-${GIT_BRANCH}-${GIT_SHA:0:7}"
+          fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Chart Version: $VERSION"
 
