@@ -1,13 +1,15 @@
-name: Push
+name: Build and Publish Docker Images and Helm Chart
+
+# This workflow builds Docker images and Helm charts on all pushes and PRs.
+# However, artifacts are only pushed to the registry (ghcr.io) when triggered by git tags (v*.*.*).
 
 on:
   push:
-    # Publish semver tags as releases.
+    branches:
+      - main
+      - 'renovate/**'
     tags: [ 'v*.*.*' ]
-
-env:
-  REGISTRY: ghcr.io
-  CHART_NAME: showcase-insurance-claims
+  pull_request:
 
 jobs:
   images:
@@ -15,7 +17,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write
 
     strategy:
       fail-fast: false # Ensures that if one build fails, the others will still run
@@ -29,33 +30,27 @@ jobs:
             context: frontend
 
     steps:
-      - name: 'Checkout'
+      - name: Checkout
         uses: 'actions/checkout@v5'
         with:
           fetch-depth: 0 # required to fetch all history for all branches and tags
 
-      # Set up BuildKit Docker container builder to be able to build
-      # multi-platform images and export cache
-      # https://github.com/docker/setup-buildx-action
+      # Set up BuildKit Docker container builder to be able to build multi-platform images and export cache
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Login against a Docker registry
-      # https://github.com/docker/login-action
-      - name: Log into registry ${{ env.REGISTRY }}
+      - name: Log into Docker Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Extract metadata (tags, labels) for Docker
-      # https://github.com/docker/metadata-action
-      - name: Extract Docker metadata
+      - name: Extract Docker metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.image_name }}
+          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image_name }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -63,30 +58,26 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable={{is_default_branch}}
 
-      # Build and push Docker image with Buildx
-      # https://github.com/docker/build-push-action
       - name: Build and push Docker image
         id: build-and-push
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.context }}
           platforms: linux/amd64,linux/arm64
-          push: true
+          push: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
 
   helm-chart:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-      id-token: write
 
     steps:
-      - name: 'Checkout'
+      - name: Checkout
         uses: 'actions/checkout@v5'
         with:
           fetch-depth: 0
@@ -113,27 +104,22 @@ jobs:
 
       - name: Update Image Tags for Release
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
           # Update image tags in values.yaml to use the versioned images
           # This assumes Docker images were built with the same git tag
-          sed -i "s|tag: latest|tag: ${VERSION}|g" chart/values.yaml
+          sed -i "s|tag: latest|tag: ${{ steps.version.outputs.version }}|g" chart/values.yaml
 
       - name: Package Helm Chart
         run: |
           helm package chart/ --destination .
 
-      # Login against a Docker registry
-      # https://github.com/docker/login-action
-      - name: Log into registry ${{ env.REGISTRY }}
+      - name: Log into Docker Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push Helm Chart to OCI Registry
+        if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          CHART_VERSION="${{ steps.version.outputs.version }}"
-          CHART_PACKAGE="${CHART_NAME}-${CHART_VERSION}.tgz"
-
-          helm push "${CHART_PACKAGE}" oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
+          helm push *.tgz oci://ghcr.io/${{ github.repository_owner }}/charts
