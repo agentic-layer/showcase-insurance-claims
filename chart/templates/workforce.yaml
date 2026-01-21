@@ -1,0 +1,16 @@
+apiVersion: runtime.agentic-layer.ai/v1alpha1
+kind: AgenticWorkforce
+metadata:
+  name: insurance-claims-workforce
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{ include "showcase-insurance-claims.labels" . | nindent 4 }}
+spec:
+  name: "Insurance Claims Workforce"
+  description: "A workforce to demonstrate handling of insurance claims"
+  owner: "user-name@example.com"
+  tags:
+    - insurance
+    - claims
+  entryPointAgents:
+    - name: claims-analysis-agent

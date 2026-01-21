@@ -26,6 +26,7 @@ For detailed documentation on Agentic Layer components, see [docs.agentic-layer.
     - [n8n Workflow Integration](#n8n-workflow-integration)
 - [Voice Agent Details](#voice-agent-details)
 - [Architecture Overview](#architecture-overview)
+- [Helm Chart](#helm-chart)
 - [Development](#development)
 - [Current Limitations](#current-limitations)
 
@@ -285,6 +286,24 @@ For detailed architecture documentation, see [docs.agentic-layer.ai](https://doc
 | n8n                     | 12041 | Workflow automation          |
 
 ----
+
+## Helm Chart
+
+This project provides a Helm chart for deploying the showcase to Kubernetes clusters.
+
+### Installing from OCI Registry
+
+The Helm chart is published to GitHub Container Registry for each release tag.
+You need to install the Agentic Layer components first, see https://docs.agentic-layer.ai.
+
+```shell
+# Install the latest release
+helm install showcase-insurance-claims \
+  oci://ghcr.io/agentic-layer/charts/showcase-insurance-claims \
+  --version 0.6.0 \
+  --namespace showcase-insurance-claims \
+  --create-namespace
+```
 
 ## Development
 

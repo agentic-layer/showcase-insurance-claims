@@ -4,9 +4,9 @@ metadata:
   name: claims-voice-agent
   namespace: {{ .Values.namespace }}
   labels:
-    {{- include "insurance-claims-showcase.labels" . | nindent 4 }}
+    {{ include "showcase-insurance-claims.labels" . | nindent 4 }}
 spec:
-  framework: {{ .Values.claimsVoiceAgent.framework }}
+  framework: google-adk
   image: {{ .Values.images.voiceAgent.repository }}:{{ .Values.images.voiceAgent.tag }}
   env:
     - name: LOGLEVEL
@@ -23,4 +23,4 @@ spec:
   envFrom:
     - configMapRef:
         name: {{ .Values.externalDependencies.otelConfig.name }}
-        optional: {{ .Values.externalDependencies.otelConfig.optional }}
+        optional: true

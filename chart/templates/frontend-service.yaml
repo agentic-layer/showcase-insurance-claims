@@ -4,12 +4,12 @@ metadata:
   name: showcase-claims-frontend
   namespace: {{ .Values.namespace }}
   labels:
-    {{- include "insurance-claims-showcase.labels" . | nindent 4 }}
+    {{ include "showcase-insurance-claims.labels" . | nindent 4 }}
 spec:
   selector:
     app: showcase-claims-frontend
   ports:
     - protocol: TCP
-      port: {{ .Values.frontend.nginx.port }}
-      targetPort: {{ .Values.frontend.nginx.port }}
+      port: 80
+      targetPort: 80
   type: ClusterIP

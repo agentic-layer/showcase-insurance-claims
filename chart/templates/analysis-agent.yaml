@@ -4,15 +4,15 @@ metadata:
   name: claims-analysis-agent
   namespace: {{ .Values.namespace }}
   labels:
-    {{- include "insurance-claims-showcase.labels" . | nindent 4 }}
+    {{ include "showcase-insurance-claims.labels" . | nindent 4 }}
 spec:
-  exposed: {{ .Values.claimsAnalysisAgent.exposed }}
-  framework: {{ .Values.claimsAnalysisAgent.framework }}
+  exposed: true
+  framework: google-adk
   {{- if and .Values.images.agentTemplateAdk.repository .Values.images.agentTemplateAdk.tag }}
   # Tilt requires an image to be set here, even though the agent-runtime would have set it based on the framework.
   image: {{ .Values.images.agentTemplateAdk.repository }}:{{ .Values.images.agentTemplateAdk.tag }}
   {{- end }}
-  description: {{ .Values.claimsAnalysisAgent.description | quote }}
+  description: "Analyze insurance claim transcripts and extract structured data."
   instruction: |-
     ANALYSE-REGELN:
     Analysiere das folgende Transkript sorgfältig.
@@ -55,7 +55,7 @@ spec:
         },
         "vehicle_id": "string oder null"
       }
-  model: {{ .Values.config.model | quote }}
+  model: "gemini/gemini-2.5-flash-lite"
   tools:
     - name: customer-database
       toolServerRef:
@@ -70,3 +70,4 @@ spec:
   envFrom:
     - configMapRef:
         name: {{ .Values.externalDependencies.otelConfig.name }}
+        optional: true

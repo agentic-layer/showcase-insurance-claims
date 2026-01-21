@@ -4,9 +4,9 @@ metadata:
   name: customer-database
   namespace: {{ .Values.namespace }}
   labels:
-    {{- include "insurance-claims-showcase.labels" . | nindent 4 }}
+    {{ include "showcase-insurance-claims.labels" . | nindent 4 }}
 spec:
-  protocol: {{ .Values.customerDatabase.protocol }}
-  transportType: {{ .Values.customerDatabase.transportType }}
+  protocol: mcp
+  transportType: http
   image: {{ .Values.images.customerDatabase.repository }}:{{ .Values.images.customerDatabase.tag }}
-  port: {{ .Values.customerDatabase.port }}
+  port: 8000
