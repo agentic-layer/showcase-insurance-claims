@@ -55,7 +55,7 @@ spec:
         },
         "vehicle_id": "string oder null"
       }
-  model: {{ .Values.config.model | quote }}
+  model: "gemini/gemini-2.5-flash-lite"
   tools:
     - name: customer-database
       toolServerRef:
