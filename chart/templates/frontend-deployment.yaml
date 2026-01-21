@@ -4,10 +4,10 @@ metadata:
   name: showcase-claims-frontend
   namespace: {{ .Values.namespace }}
   labels:
-    {{- include "insurance-claims-showcase.labels" . | nindent 4 }}
+    {{ include "showcase-insurance-claims.labels" . | nindent 4 }}
     app: showcase-claims-frontend
 spec:
-  replicas: {{ .Values.frontend.replicas }}
+  replicas: 1
   selector:
     matchLabels:
       app: showcase-claims-frontend
@@ -19,30 +19,34 @@ spec:
       # The init container now only waits for the claims-voice-agent service.
       initContainers:
         - name: wait-for-services
-          image: {{ .Values.frontend.initContainer.image }}
+          image: busybox:1.28
           command:
             - sh
             - -c
             - until nslookup claims-voice-agent.{{ .Values.namespace }}.svc.cluster.local; do echo 'waiting for voice agent service...'; sleep 2; done;
       containers:
         - name: showcase-claims-frontend
-          image: {{ .Values.images.frontend.repository }}:{{ .Values.images.frontend.tag }}
-          imagePullPolicy: {{ .Values.images.frontend.pullPolicy }}
+          image: {{ .Values.images.frontend.image }}:{{ .Values.images.frontend.tag }}
           ports:
-            - containerPort: {{ .Values.frontend.nginx.port }}
+            - containerPort: 80
           env:
             - name: NGINX_PORT
-              value: {{ .Values.frontend.nginx.port | quote }}
+              value: "80"
             - name: FRAME_OPTIONS
-              value: {{ .Values.frontend.nginx.frameOptions | quote }}
+              value: "SAMEORIGIN"
             # The URL for the WebSocket backend
             - name: WEBSOCKET_URL
-              value: {{ .Values.frontend.websocketUrl | quote }}
+              value: "http://claims-voice-agent.{{ .Values.namespace }}.svc.cluster.local:8000"
           resources:
-            {{- toYaml .Values.frontend.resources | nindent 12 }}
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
           readinessProbe:
             httpGet:
-              path: {{ .Values.frontend.readinessProbe.path }}
-              port: {{ .Values.frontend.readinessProbe.port }}
-            initialDelaySeconds: {{ .Values.frontend.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.frontend.readinessProbe.periodSeconds }}
+              path: /health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10

@@ -3,19 +3,6 @@ Thank you for installing {{ .Chart.Name }}!
 Release: {{ .Release.Name }}
 Namespace: {{ .Values.namespace }}
 
-Resources installed:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-• Namespace: {{ .Values.namespace }}
-• Agents:
-  - claims-analysis-agent (exposed via Agent Gateway)
-  - claims-voice-agent (WebSocket-based voice agent)
-• ToolServer:
-  - customer-database (MCP server)
-• AgenticWorkforce:
-  - insurance-claims-workforce
-• Frontend:
-  - showcase-claims-frontend (Deployment + Service)
-
 Access the Frontend:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 To access the frontend application, use port-forwarding:
@@ -35,11 +22,9 @@ This chart requires the following external resources to exist:
 
 2. ConfigMap: {{ .Values.externalDependencies.otelConfig.name }}
    Purpose: OpenTelemetry Tempo configuration
-   Namespace: {{ .Values.externalDependencies.otelConfig.namespace }}
 
 3. Secret: {{ .Values.externalDependencies.apiKeySecret.name }}
    Purpose: Google Gemini API key
-   Namespace: {{ .Values.externalDependencies.apiKeySecret.namespace }}
    Required key: {{ .Values.externalDependencies.apiKeySecret.key }}
 
 Verify Installation:
