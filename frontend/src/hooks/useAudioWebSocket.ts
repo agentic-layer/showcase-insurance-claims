@@ -42,6 +42,14 @@ export const useAudioWebSocket = ({
     return [audioPlayerNodeInstance, audioContext] as const;
   }, []);
 
+  const convertFloat32ToPCM = useCallback((inputData: Float32Array): ArrayBuffer => {
+    const pcm16 = new Int16Array(inputData.length);
+    for (let i = 0; i < inputData.length; i++) {
+      pcm16[i] = inputData[i] * 0x7fff;
+    }
+    return pcm16.buffer;
+  }, []);
+
   const startAudioRecorderWorklet = useCallback(async (audioRecorderHandler: (pcmData: ArrayBuffer) => void) => {
     const audioRecorderContextInstance = new AudioContext({ sampleRate: 16000 });
     const workletURL = '/js/pcm-recorder-processor.js';
@@ -58,15 +66,7 @@ export const useAudioWebSocket = ({
     };
 
     return [audioRecorderNodeInstance, audioRecorderContextInstance, stream] as const;
-  }, []);
-
-  const convertFloat32ToPCM = useCallback((inputData: Float32Array): ArrayBuffer => {
-    const pcm16 = new Int16Array(inputData.length);
-    for (let i = 0; i < inputData.length; i++) {
-      pcm16[i] = inputData[i] * 0x7fff;
-    }
-    return pcm16.buffer;
-  }, []);
+  }, [convertFloat32ToPCM]);
 
   const base64ToArray = useCallback((base64: string): ArrayBuffer => {
     const binaryString = window.atob(base64);
@@ -214,6 +214,7 @@ export const useAudioWebSocket = ({
         console.log('Audio mode not supported, switching to text mode');
         setIsAudioMode(false);
         setIsRecording(false);
+        // eslint-disable-next-line react-hooks/immutability
         connectWebSocket(false);
         return;
       }
@@ -228,7 +229,7 @@ export const useAudioWebSocket = ({
     websocket.current.onerror = (e) => {
       console.log('WebSocket error:', e);
     };
-  }, [sessionId, wsUrl, isAudioMode, onMessage, base64ToArray, startAudioPlayerWorklet]);
+  }, [sessionId, isAudioMode, onMessage, base64ToArray, startAudioPlayerWorklet]);
 
   const initializeAudioPlayer = useCallback(async () => {
     if (!audioPlayerNode.current) {

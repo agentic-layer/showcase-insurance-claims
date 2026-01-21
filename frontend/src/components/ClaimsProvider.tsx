@@ -1,7 +1,28 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatBerlinTime, formatBerlinLocalTime, formatBirthDate } from '@/lib/dateUtils';
+
+interface AccidentLocation {
+  street?: string;
+  house_number?: string;
+  zip_code?: string;
+  postal_code?: string;
+  city?: string;
+  remarks?: string;
+  country?: string;
+}
+
+interface DriverInfo {
+  first_name?: string;
+  last_name?: string;
+  relation_to_policy_holder?: string;
+}
+
+interface AdditionalClaimData {
+  transcript_summary?: string;
+  material_damage?: string;
+}
 
 interface ClaimData {
   id: string;
@@ -64,7 +85,7 @@ export const ClaimsProvider: React.FC<ClaimsProviderProps> = ({ children }) => {
   const { toast } = useToast();
 
   // Fetch available claims (last 5) with optional auto-selection
-  const fetchAvailableClaims = async (autoSelectId?: string) => {
+  const fetchAvailableClaims = useCallback(async (autoSelectId?: string) => {
     try {
 
       const { data: claims, error } = await supabase
@@ -119,13 +140,13 @@ export const ClaimsProvider: React.FC<ClaimsProviderProps> = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedClaimId, toast]);
 
   // Fetch detailed claim data
-  const fetchClaimData = async (claimId: string) => {
+  const fetchClaimData = useCallback(async (claimId: string) => {
     try {
       setIsLoading(true);
-      
+
       const { data: claimData, error: claimError } = await supabase
         .from('claims')
         .select(`
@@ -173,7 +194,7 @@ export const ClaimsProvider: React.FC<ClaimsProviderProps> = ({ children }) => {
           .select('overall_sentiment')
           .eq('conversation_id', claimData.conversation_id)
           .maybeSingle();
-        
+
         sentimentData = sentiment;
       }
 
@@ -186,10 +207,11 @@ export const ClaimsProvider: React.FC<ClaimsProviderProps> = ({ children }) => {
           .select('transcript_summary, material_damage')
           .eq('id', claimId)
           .maybeSingle();
-        
+
         if (additionalData) {
-          transcriptSummary = (additionalData as any).transcript_summary;
-          materialDamage = (additionalData as any).material_damage;
+          const typedData = additionalData as AdditionalClaimData;
+          transcriptSummary = typedData.transcript_summary;
+          materialDamage = typedData.material_damage;
         }
       } catch (error) {
         console.log('Could not fetch additional fields:', error);
@@ -198,10 +220,10 @@ export const ClaimsProvider: React.FC<ClaimsProviderProps> = ({ children }) => {
       // Format the data for display
       const customer = claimData.customers;
 
-      const formatAccidentLocation = (location: any) => {
+      const formatAccidentLocation = (location: AccidentLocation | string | null) => {
         if (!location) return 'Nicht verfügbar';
         if (typeof location === 'string') return location;
-        
+
         const street = location.street || '';
         const houseNumber = location.house_number || '';
         const zip = location.zip_code || location.postal_code || '';
@@ -235,23 +257,23 @@ export const ClaimsProvider: React.FC<ClaimsProviderProps> = ({ children }) => {
         return address || 'Nicht verfügbar';
       };
 
-      const formatDriver = (driver: any) => {
+      const formatDriver = (driver: DriverInfo | string | null) => {
         if (!driver) return 'Nicht verfügbar';
         if (typeof driver === 'string') return driver;
-        
+
         const firstName = driver.first_name || '';
         const lastName = driver.last_name || '';
         const relation = driver.relation_to_policy_holder || '';
-        
+
         let driverInfo = '';
         if (firstName && lastName) {
           driverInfo = `${firstName} ${lastName}`;
         }
-        
+
         if (relation) {
           driverInfo += driverInfo ? ` (${relation})` : relation;
         }
-        
+
         return driverInfo || 'Nicht verfügbar';
       };
 
@@ -283,19 +305,19 @@ export const ClaimsProvider: React.FC<ClaimsProviderProps> = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
   // Fetch available claims on mount
   useEffect(() => {
     fetchAvailableClaims();
-  }, []);
+  }, [fetchAvailableClaims]);
 
   // Fetch claim data when selected claim changes
   useEffect(() => {
     if (selectedClaimId) {
       fetchClaimData(selectedClaimId);
     }
-  }, [selectedClaimId]);
+  }, [selectedClaimId, fetchClaimData]);
 
   // Set up real-time subscription
   useEffect(() => {
@@ -312,7 +334,7 @@ export const ClaimsProvider: React.FC<ClaimsProviderProps> = ({ children }) => {
         async (payload) => {
           console.log('New claim inserted:', payload);
           const newClaimId = payload.new?.id;
-          
+
           if (newClaimId) {
             // Refresh claims list and auto-select the new claim
             await fetchAvailableClaims(newClaimId);
@@ -340,7 +362,7 @@ export const ClaimsProvider: React.FC<ClaimsProviderProps> = ({ children }) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [selectedClaimId]);
+  }, [selectedClaimId, fetchAvailableClaims, fetchClaimData]);
 
   return (
     <ClaimsContext.Provider
