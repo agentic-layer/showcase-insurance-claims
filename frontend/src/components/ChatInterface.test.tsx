@@ -10,12 +10,38 @@ vi.mock('@/hooks/use-toast', () => ({
   })
 }));
 
+// Mock the useAudioWebSocket hook
+const mockSendTextMessage = vi.fn();
+const mockConnectWebSocket = vi.fn();
+const mockStartAudio = vi.fn();
+const mockStopAudio = vi.fn();
+const mockToggleMute = vi.fn();
+
+vi.mock('@/hooks/useAudioWebSocket', () => ({
+  useAudioWebSocket: () => ({
+    isConnected: true,
+    isAudioMode: false,
+    isRecording: false,
+    isMuted: false,
+    startAudio: mockStartAudio,
+    stopAudio: mockStopAudio,
+    toggleMute: mockToggleMute,
+    sendTextMessage: mockSendTextMessage,
+    connectWebSocket: mockConnectWebSocket
+  })
+}));
+
 // Mock fetch to avoid actual HTTP calls
 global.fetch = vi.fn();
 
 describe('ChatInterface', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSendTextMessage.mockClear();
+    mockConnectWebSocket.mockClear();
+    mockStartAudio.mockClear();
+    mockStopAudio.mockClear();
+    mockToggleMute.mockClear();
   });
 
   it('loads and renders correctly', () => {
@@ -23,8 +49,7 @@ describe('ChatInterface', () => {
 
     // Check if the component renders with expected elements
     expect(screen.getByText('Chat mit Claims Agent')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Schreiben Sie Ihre Nachricht...')).toBeInTheDocument();
-    expect(screen.getByText(/Hallo! Ich bin Ihr Claims Agent/)).toBeInTheDocument();
+    expect(screen.getByText('Gespräch beginnen')).toBeInTheDocument();
   });
 
   it('exposes sendMessage function via ref', () => {
@@ -36,126 +61,71 @@ describe('ChatInterface', () => {
     expect(ref.current?.sendMessage).toBeInstanceOf(Function);
   });
 
-  it('allows typing in input field', () => {
+  it('starts conversation when button is clicked', async () => {
     render(<ChatInterface />);
 
-    const input = screen.getByPlaceholderText('Schreiben Sie Ihre Nachricht...');
-    fireEvent.change(input, { target: { value: 'Test message' } });
+    const startButton = screen.getByText('Gespräch beginnen');
 
-    expect(input).toHaveValue('Test message');
+    await act(async () => {
+      fireEvent.click(startButton);
+    });
+
+    expect(mockStartAudio).toHaveBeenCalled();
   });
 
-  it('can trigger sendMessage via ref without HTTP call', async () => {
+  it('can trigger sendMessage via ref', async () => {
     const ref = React.createRef<ChatInterfaceRef>();
     render(<ChatInterface ref={ref} />);
-
-    // Mock fetch to resolve immediately without making actual calls
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        choices: [{ message: { content: 'Test response' } }]
-      })
-    } as Response);
 
     // Call sendMessage via ref wrapped in act
     await act(async () => {
       ref.current?.sendMessage('Test message from ref');
     });
 
-    // Wait for the message to appear in the UI
-    await waitFor(() => {
-      expect(screen.getByText('Test message from ref')).toBeInTheDocument();
-    });
+    // Verify sendTextMessage was called (synchronous)
+    expect(mockSendTextMessage).toHaveBeenCalledWith('Test message from ref');
 
-    // Verify fetch was called with correct parameters
-    expect(fetch).toHaveBeenCalledWith('/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: expect.stringContaining('"content":"Test message from ref"')
-    });
+    // Verify the message appears in UI
+    expect(screen.getByText('Test message from ref')).toBeInTheDocument();
   });
 
-  it('sends message when Enter is pressed', async () => {
-    render(<ChatInterface />);
-
-    // Mock fetch
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        choices: [{ message: { content: 'Test response' } }]
-      })
-    } as Response);
-
-    const input = screen.getByPlaceholderText('Schreiben Sie Ihre Nachricht...');
-
-    // Focus on the input and set value
-    fireEvent.focus(input);
-    fireEvent.change(input, { target: { value: 'Test message' } });
-
-    await act(async () => {
-      fireEvent.keyPress(input, { key: 'Enter', code: 'Enter', charCode: 13 });
-    });
-
-    // Wait for the message to appear in the UI
-    await waitFor(() => {
-      expect(screen.getByText('Test message')).toBeInTheDocument();
-    });
-
-    // Verify fetch was called
-    expect(fetch).toHaveBeenCalledWith('/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: expect.stringContaining('"content":"Test message"')
-    });
-  });
-
-  it('sends message when send button is clicked', async () => {
-    render(<ChatInterface />);
-
-    // Mock fetch
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        choices: [{ message: { content: 'Test response' } }]
-      })
-    } as Response);
-
-    const input = screen.getByPlaceholderText('Schreiben Sie Ihre Nachricht...');
-    const sendButton = screen.getByRole('button');
-
-    fireEvent.change(input, { target: { value: 'Test message' } });
-
-    await act(async () => {
-      fireEvent.click(sendButton);
-    });
-
-    // Wait for the message to appear in the UI
-    await waitFor(() => {
-      expect(screen.getByText('Test message')).toBeInTheDocument();
-    });
-  });
-
-  it('shows loading state during message sending', () => {
+  it('displays messages correctly', async () => {
     const ref = React.createRef<ChatInterfaceRef>();
     render(<ChatInterface ref={ref} />);
 
-    // Mock fetch to never resolve (simulate slow response)
-    vi.mocked(fetch).mockImplementationOnce(() => {
-      return new Promise(() => {
-      });
+    await act(async () => {
+      ref.current?.sendMessage('Test message');
     });
+
+    // Wait for the message to appear in the UI
+    await waitFor(() => {
+      expect(screen.getByText('Test message')).toBeInTheDocument();
+    });
+  });
+
+  it('sends message via websocket', async () => {
+    const ref = React.createRef<ChatInterfaceRef>();
+    render(<ChatInterface ref={ref} />);
+
+    await act(async () => {
+      ref.current?.sendMessage('Test message');
+    });
+
+    // Verify sendTextMessage was called
+    expect(mockSendTextMessage).toHaveBeenCalledWith('Test message');
+  });
+
+  it('handles message sending correctly', () => {
+    const ref = React.createRef<ChatInterfaceRef>();
+    render(<ChatInterface ref={ref} />);
 
     // Call sendMessage wrapped in act
     act(() => {
       ref.current?.sendMessage('Test message');
     });
 
-    // Verify loading indicator appears
-    expect(screen.getByText('Agent denkt nach...')).toBeInTheDocument();
+    // Verify message appears
+    expect(screen.getByText('Test message')).toBeInTheDocument();
   });
 
   it('handles empty messages correctly', () => {
@@ -167,8 +137,8 @@ describe('ChatInterface', () => {
       ref.current?.sendMessage('');
     });
 
-    // Verify fetch was not called
-    expect(fetch).not.toHaveBeenCalled();
+    // Verify sendTextMessage was not called
+    expect(mockSendTextMessage).not.toHaveBeenCalled();
   });
 
   it('handles whitespace-only messages correctly', () => {
@@ -180,19 +150,24 @@ describe('ChatInterface', () => {
       ref.current?.sendMessage('   ');
     });
 
-    // Verify fetch was not called
-    expect(fetch).not.toHaveBeenCalled();
+    // Verify sendTextMessage was not called
+    expect(mockSendTextMessage).not.toHaveBeenCalled();
   });
 
-  it('displays initial welcome message', () => {
+  it('displays initial button', () => {
     render(<ChatInterface />);
 
-    // Check that the initial message is displayed
-    expect(screen.getByText(/Hallo! Ich bin Ihr Claims Agent/)).toBeInTheDocument();
+    // Check that the initial button is displayed
+    expect(screen.getByText('Gespräch beginnen')).toBeInTheDocument();
   });
 
   it('formats message timestamps correctly', () => {
-    render(<ChatInterface />);
+    const ref = React.createRef<ChatInterfaceRef>();
+    render(<ChatInterface ref={ref} />);
+
+    act(() => {
+      ref.current?.sendMessage('Test message');
+    });
 
     // Check that timestamp is displayed in German format
     const timeElement = screen.getByText(/\d{2}:\d{2}/);
