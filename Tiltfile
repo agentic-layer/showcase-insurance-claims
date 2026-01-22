@@ -4,7 +4,7 @@ update_settings(max_parallel_updates=10)
 load('ext://dotenv', 'dotenv')
 dotenv()
 
-v1alpha1.extension_repo(name='agentic-layer', url='https://github.com/agentic-layer/tilt-extensions', ref='v0.6.0')
+v1alpha1.extension_repo(name='agentic-layer', url='https://github.com/agentic-layer/tilt-extensions', ref='v0.7.0')
 
 v1alpha1.extension(name='cert-manager', repo_name='agentic-layer', repo_path='cert-manager')
 load('ext://cert-manager', 'cert_manager_install')
@@ -22,6 +22,10 @@ v1alpha1.extension(name='agent-gateway-krakend', repo_name='agentic-layer', repo
 load('ext://agent-gateway-krakend', 'agent_gateway_krakend_install')
 agent_gateway_krakend_install(version='0.5.0')
 
+v1alpha1.extension(name='librechat', repo_name='agentic-layer', repo_path='librechat')
+load('ext://librechat', 'librechat_install')
+librechat_install(port='12040')
+
 # Override Agent resource to use image from spec.image field
 # As a consequence, all agents have to specify the image field.
 # Unfortunately, Tilt does not currently support using a default/optional image pattern with k8s_kind.
@@ -31,14 +35,6 @@ k8s_kind(
     # Operator creates pods asynchronously after Agent CRD creation and Tilt
     # must wait for operator-managed pods rather than assuming immediate readiness
     pod_readiness='wait',
-)
-
-load('ext://helm_remote', 'helm_remote')
-helm_remote(
-    'librechat',
-    repo_url='oci://ghcr.io/danny-avila/librechat-chart',
-    namespace='librechat',
-    values='./deploy/local/librechat/values.yaml',
 )
 
 # Docker builds
@@ -79,11 +75,6 @@ k8s_resource('observability-dashboard', labels=['agentic-layer'], port_forwards=
 
 # Monitoring
 k8s_resource('lgtm', labels=['monitoring'], resource_deps=[], port_forwards=['12000:3000'])
-
-# LibreChat Components
-k8s_resource('librechat-librechat', labels=['librechat'], port_forwards=['12040:3080'])
-k8s_resource('librechat-mongodb', labels=['librechat'])
-k8s_resource('librechat-meilisearch', labels=['librechat'])
 
 # n8n Components
 k8s_resource('n8n', labels=['n8n'], port_forwards=['12041:5678'])
