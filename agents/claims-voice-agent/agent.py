@@ -27,8 +27,6 @@ def send_message(claim_data: str) -> dict:
 
 
 root_agent = Agent(
-    # model="gemini-2.0-flash-exp",
-    # model="gemini-2.0-flash-live-001",
     # model="gemini-live-2.5-flash-preview",
     # model="gemini-2.5-flash-live-preview",
     # model="gemini-2.5-flash-preview-native-audio-dialog",
