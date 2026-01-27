@@ -178,8 +178,8 @@ There is no configuration-as-code for n8n in this showcase. Use the web interfac
    1. Open http://localhost:12041/workflow/new
    2. Click "Import from File" and select a workflow JSON file (see below)
 4. Configure any necessary credentials (e.g., Agent Gateway URL, API keys)
-   1. For Agent Gateway, use `http://agent-gateway-krakend.agent-gateway-krakend:10000/claims-analysis-agent`
-   2. For AI Gateway (LiteLLM), use `http://ai-gateway-litellm.ai-gateway:4000`
+   1. For Agent Gateway, use `http://agent-gateway.agent-gateway:10000/claims-analysis-agent`
+   2. For AI Gateway (LiteLLM), use `http://ai-gateway.ai-gateway:4000`
 
 **Example Workflows:**
 Three example workflows are included in [n8n-workflows](n8n-workflows):
@@ -252,9 +252,9 @@ Use the custom WebSocket frontend at http://localhost:12030 to interact with the
 
 - **Agent Runtime** (`agent-runtime`): Core Kubernetes operator managing Agent, ToolServer, and AgenticWorkforce
   CRDs
-- **AI Gateway** (`ai-gateway-litellm`): Unified LLM access via LiteLLM supporting multiple
+- **AI Gateway** (`ai-gateway`): Unified LLM access via LiteLLM supporting multiple
   providers
-- **Agent Gateway** (`agent-gateway-krakend`): OpenAI-compatible REST API for accessing
+- **Agent Gateway** (`agent-gateway`): OpenAI-compatible REST API for accessing
   agents
 - **Observability**: LGTM stack (Loki, Grafana, Tempo, Mimir) with OpenTelemetry
   integration

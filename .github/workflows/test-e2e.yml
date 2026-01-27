@@ -34,7 +34,7 @@ jobs:
 
       - name: Verify Deployment
         run: |
-          kubectl port-forward service/agent-gateway-krakend -n agent-gateway-krakend 12002:10000 &
+          kubectl port-forward service/agent-gateway -n agent-gateway 12002:10000 &
           curl --retry 5 --retry-connrefused -vf http://localhost:12002/claims-analysis-agent/.well-known/agent-card.json
-          
+
           ./scripts/test-claims-agent.sh all

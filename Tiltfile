@@ -4,7 +4,7 @@ update_settings(max_parallel_updates=10)
 load('ext://dotenv', 'dotenv')
 dotenv()
 
-v1alpha1.extension_repo(name='agentic-layer', url='https://github.com/agentic-layer/tilt-extensions', ref='v0.7.0')
+v1alpha1.extension_repo(name='agentic-layer', url='https://github.com/agentic-layer/tilt-extensions', ref='v0.8.0')
 
 v1alpha1.extension(name='cert-manager', repo_name='agentic-layer', repo_path='cert-manager')
 load('ext://cert-manager', 'cert_manager_install')
@@ -69,8 +69,8 @@ k8s_resource('customer-database', labels=['showcase'], resource_deps=['agent-run
 k8s_resource('showcase-claims-frontend', labels=['showcase'], resource_deps=['claims-voice-agent'], port_forwards=['12030:80'])
 
 # Agentic Layer Components
-k8s_resource('ai-gateway-litellm', labels=['agentic-layer'], resource_deps=['agent-runtime'], port_forwards=['12001:4000'])
-k8s_resource('agent-gateway-krakend', labels=['agentic-layer'], resource_deps=['claims-analysis-agent', 'claims-voice-agent'], port_forwards=['12002:8080'])
+k8s_resource('ai-gateway', labels=['agentic-layer'], resource_deps=['agent-runtime'], port_forwards=['12001:4000'])
+k8s_resource('agent-gateway', labels=['agentic-layer'], resource_deps=['claims-analysis-agent', 'claims-voice-agent'], port_forwards=['12002:8080'])
 k8s_resource('observability-dashboard', labels=['agentic-layer'], port_forwards=['12004:8000'])
 
 # Monitoring
