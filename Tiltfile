@@ -20,7 +20,7 @@ ai_gateway_litellm_install(version='0.3.2', instance=False)
 
 v1alpha1.extension(name='agent-gateway-krakend', repo_name='agentic-layer', repo_path='agent-gateway-krakend')
 load('ext://agent-gateway-krakend', 'agent_gateway_krakend_install')
-agent_gateway_krakend_install(version='0.5.0')
+agent_gateway_krakend_install(version='0.5.3')
 
 v1alpha1.extension(name='librechat', repo_name='agentic-layer', repo_path='librechat')
 load('ext://librechat', 'librechat_install')
