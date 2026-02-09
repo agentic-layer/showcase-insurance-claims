@@ -6,13 +6,29 @@ FastMCP server providing customer data and utility tools for insurance claims pr
 """
 
 import logging
+import os
 
 from fastmcp import FastMCP
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 from mock_database import find_customer_by_name
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+
+# Configure OpenTelemetry (reads from OTEL_SERVICE_NAME, OTEL_EXPORTER_OTLP_ENDPOINT env vars)
+trace_provider = TracerProvider()
+if os.environ.get("OTEL_EXPORTER_OTLP_PROTOCOL", "grpc") == "grpc":
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter as OTLPSpanExporterGrpc
+
+    trace_provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporterGrpc()))
+else:
+    from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter as OTLPSpanExporterHttp
+
+    trace_provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporterHttp()))
+trace.set_tracer_provider(trace_provider)
 
 # Create the FastMCP server instance
 mcp = FastMCP("Claims Tools")
