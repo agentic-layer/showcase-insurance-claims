@@ -10,3 +10,10 @@ spec:
   transportType: http
   image: {{ .Values.images.customerDatabase.repository }}:{{ .Values.images.customerDatabase.tag }}
   port: 8000
+  env:
+    - name: OTEL_SERVICE_NAME
+      value: customer-database
+  envFrom:
+    - configMapRef:
+        name: {{ .Values.externalDependencies.otelConfig.name }}
+        optional: true
