@@ -1,8 +1,10 @@
-update_settings(max_parallel_updates=10)
+update_settings(max_parallel_updates=10, k8s_upsert_timeout_secs=600)
 
 # Load .env file for environment variables
 load('ext://dotenv', 'dotenv')
 dotenv()
+
+load('ext://helm_remote', 'helm_remote')
 
 v1alpha1.extension_repo(name='agentic-layer', url='https://github.com/agentic-layer/tilt-extensions', ref='v0.9.2')
 
@@ -20,7 +22,14 @@ ai_gateway_litellm_install(version='0.4.1', instance=False)
 
 v1alpha1.extension(name='agent-gateway-krakend', repo_name='agentic-layer', repo_path='agent-gateway-krakend')
 load('ext://agent-gateway-krakend', 'agent_gateway_krakend_install')
-agent_gateway_krakend_install(version='0.5.3')
+agent_gateway_krakend_install(version='0.5.3', instance=False)
+
+helm_remote(
+    'observability-dashboard',
+    repo_url='oci://ghcr.io/agentic-layer/charts',
+    version='0.3.0',
+    namespace='observability-dashboard',
+)
 
 v1alpha1.extension(name='librechat', repo_name='agentic-layer', repo_path='librechat')
 load('ext://librechat', 'librechat_install')
@@ -70,7 +79,7 @@ k8s_resource('showcase-claims-frontend', labels=['showcase'], resource_deps=['cl
 
 # Agentic Layer Components
 k8s_resource('ai-gateway', labels=['agentic-layer'], resource_deps=['agent-runtime'], port_forwards=['12001:4000'])
-k8s_resource('agent-gateway', labels=['agentic-layer'], resource_deps=['claims-analysis-agent', 'claims-voice-agent'], port_forwards=['12002:8080'])
+k8s_resource('agent-gateway', labels=['agentic-layer'], resource_deps=['agent-runtime'], port_forwards=['12002:8080'])
 k8s_resource('observability-dashboard', labels=['agentic-layer'], port_forwards=['12004:8000'])
 
 # Monitoring
