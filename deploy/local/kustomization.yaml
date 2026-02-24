@@ -6,3 +6,5 @@ resources:
   - ai-gateway.yaml
   - lgtm.yaml
   - ./n8n
+  - tool-gateway.yaml
+  - agent-runtime-config.yaml
