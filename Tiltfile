@@ -18,15 +18,15 @@ agent_runtime_install(version='0.26.0')
 
 v1alpha1.extension(name='ai-gateway-litellm', repo_name='agentic-layer', repo_path='ai-gateway-litellm')
 load('ext://ai-gateway-litellm', 'ai_gateway_litellm_install')
-ai_gateway_litellm_install(version='0.8.1', instance=False)
+ai_gateway_litellm_install(version='0.8.2', instance=False)
 
 v1alpha1.extension(name='agent-gateway-krakend', repo_name='agentic-layer', repo_path='agent-gateway-krakend')
 load('ext://agent-gateway-krakend', 'agent_gateway_krakend_install')
-agent_gateway_krakend_install(version='0.5.3', instance=False)
+agent_gateway_krakend_install(version='0.6.6', instance=False)
 
 v1alpha1.extension(name='tool-gateway-agentgateway', repo_name='agentic-layer', repo_path='tool-gateway-agentgateway')
 load('ext://tool-gateway-agentgateway', 'tool_gateway_agentgateway_install')
-tool_gateway_agentgateway_install(version='0.1.0', instance=False)
+tool_gateway_agentgateway_install(version='0.2.3', instance=False, agentgateway_version='1.0.1')
 
 helm_remote(
     'observability-dashboard',

@@ -178,8 +178,8 @@ There is no configuration-as-code for n8n in this showcase. Use the web interfac
    1. Open http://localhost:12041/workflow/new
    2. Click "Import from File" and select a workflow JSON file (see below)
 4. Configure any necessary credentials (e.g., Agent Gateway URL, API keys)
-   1. For Agent Gateway, use `http://agent-gateway.agent-gateway:10000/claims-analysis-agent`
-   2. For AI Gateway (LiteLLM), use `http://ai-gateway.ai-gateway:4000`
+   1. For Agent Gateway, use `http://agent-gateway.agent-gateway/claims-analysis-agent`
+   2. For AI Gateway (LiteLLM), use `http://ai-gateway.ai-gateway`
 
 **Example Workflows:**
 Three example workflows are included in [n8n-workflows](n8n-workflows):
