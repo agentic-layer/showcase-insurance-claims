@@ -1,6 +1,6 @@
 update_settings(max_parallel_updates=2, k8s_upsert_timeout_secs=600)
 
-# Define profiles for optional components (e.g. `tilt up -- --profile testbench --profile librechat`)
+# Define profiles for optional components (e.g. `tilt up -- --profile n8n --profile librechat`)
 config.define_string_list("profile")
 cfg = config.parse()
 profiles = cfg.get("profile", [])
@@ -32,10 +32,6 @@ agent_gateway_krakend_install(version='0.6.6', instance=False)
 v1alpha1.extension(name='tool-gateway-agentgateway', repo_name='agentic-layer', repo_path='tool-gateway-agentgateway')
 load('ext://tool-gateway-agentgateway', 'tool_gateway_agentgateway_install')
 tool_gateway_agentgateway_install(version='0.2.3', instance=False, agentgateway_version='1.0.1')
-
-v1alpha1.extension(name='librechat', repo_name='agentic-layer', repo_path='librechat')
-load('ext://librechat', 'librechat_install')
-librechat_install(port='12040')
 
 # Override Agent resource to use image from spec.image field
 # As a consequence, all agents have to specify the image field.
