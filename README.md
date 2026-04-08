@@ -108,6 +108,26 @@ Launch the complete environment using Tilt:
 tilt up
 ```
 
+#### Tilt Profiles
+
+Optional components can be enabled using profiles. Specify one or more profiles with `--profile`:
+
+```bash
+# Start with LibreChat UI
+tilt up -- --profile librechat
+
+# Start with n8n workflow automation
+tilt up -- --profile n8n
+
+# Combine multiple profiles
+tilt up -- --profile librechat --profile n8n
+```
+
+| Profile     | Description                                                                                                                                                |
+|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `librechat` | Deploys a [LibreChat](https://www.librechat.ai/) instance as a chat UI for interacting with the insurance host agent. Available at http://localhost:11003. |
+| `n8n`       | Deploys [N8N](https://n8n.io/) instance                                                                                                                    |
+
 **Service URLs:**
 
 - **LibreChat**: http://localhost:12040
