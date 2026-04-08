@@ -20,10 +20,7 @@ This chart requires the following external resources to exist:
    - ToolServer (runtime.agentic-layer.ai/v1alpha1)
    - AgenticWorkforce (runtime.agentic-layer.ai/v1alpha1)
 
-2. ConfigMap: {{ .Values.externalDependencies.otelConfig.name }}
-   Purpose: OpenTelemetry Tempo configuration
-
-3. Secret: {{ .Values.externalDependencies.apiKeySecret.name }}
+2. Secret: {{ .Values.externalDependencies.apiKeySecret.name }}
    Purpose: Google Gemini API key
    Required key: {{ .Values.externalDependencies.apiKeySecret.key }}
 

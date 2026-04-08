@@ -13,7 +13,6 @@ spec:
   env:
     - name: OTEL_SERVICE_NAME
       value: customer-database
-  envFrom:
-    - configMapRef:
-        name: {{ .Values.externalDependencies.otelConfig.name }}
-        optional: true
+  {{- with .Values.extraEnv }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}

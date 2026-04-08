@@ -67,7 +67,6 @@ spec:
       value: claims-analysis-agent
     - name: AGENT_OTEL_ENABLED
       value: {{ .Values.config.otelEnabled | quote }}
-  envFrom:
-    - configMapRef:
-        name: {{ .Values.externalDependencies.otelConfig.name }}
-        optional: true
+  {{- with .Values.extraEnv }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}

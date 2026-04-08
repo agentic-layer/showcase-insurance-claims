@@ -67,7 +67,11 @@ k8s_yaml(helm(
         'images.customerDatabase.repository=customer-database',
         'images.frontend.repository=frontend',
         'images.agentTemplateAdk.repository=ghcr.io/agentic-layer/agent-template-adk',
-        'images.agentTemplateAdk.tag=0.5.2',
+        'images.agentTemplateAdk.tag=0.8.6',
+        'extraEnv[0].name=OTEL_EXPORTER_OTLP_PROTOCOL',
+        'extraEnv[0].value=http/protobuf',
+        'extraEnv[1].name=OTEL_EXPORTER_OTLP_ENDPOINT',
+        'extraEnv[1].value=http://lgtm.monitoring.svc.cluster.local:4318',
     ],
 ))
 

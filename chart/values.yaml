@@ -33,10 +33,15 @@ config:
 # External dependencies (must exist before installing this chart)
 # These are NOT created by this chart - they must be provisioned separately
 externalDependencies:
-  # OpenTelemetry configuration
-  otelConfig:
-    name: otel-tempo-config
   # API keys (GEMINI_API_KEY)
   apiKeySecret:
     name: api-key-secrets
     key: GEMINI_API_KEY
+
+# Extra environment variables applied to all agents and tool servers
+# Example:
+#  - name: OTEL_EXPORTER_OTLP_PROTOCOL
+#    value: "http/protobuf"
+#  - name: OTEL_EXPORTER_OTLP_ENDPOINT
+#    value: "http://lgtm.monitoring.svc.cluster.local:4318"
+extraEnv: []
