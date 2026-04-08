@@ -30,11 +30,31 @@ jobs:
           tilt version
 
       - name: Run Tilt CI
-        run: tilt ci
+        run: tilt ci --timeout=30m
 
       - name: Verify Deployment
         run: |
-          kubectl port-forward service/agent-gateway -n agent-gateway 12002:10000 &
+          kubectl port-forward service/agent-gateway -n agent-gateway 12002:80 &
           curl --retry 5 --retry-connrefused -vf http://localhost:12002/claims-analysis-agent/.well-known/agent-card.json
 
           ./scripts/test-claims-agent.sh all
+
+      - name: Logs
+        run: |
+          echo ""
+          echo "Kubernetes Pod Statuses:"
+          kubectl get pods --all-namespaces
+
+          echo ""
+          echo "Agent Gateway Logs:"
+          kubectl logs -n agent-gateway -l app=agent-gateway || true
+
+          echo ""
+          echo "AI Gateway Logs:"
+          kubectl logs -n ai-gateway -l app=ai-gateway || true
+
+          echo ""
+          echo "Agent Logs:"
+          kubectl logs -n showcase-cross-selling -l app=insurance-host-agent || true
+          kubectl logs -n showcase-cross-selling -l app=communications-agent || true
+          kubectl logs -n showcase-cross-selling -l app=cross-selling-agent || true
