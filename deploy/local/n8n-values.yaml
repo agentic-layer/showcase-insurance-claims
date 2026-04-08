@@ -1,0 +1,24 @@
+fullnameOverride: n8n
+
+db:
+  type: postgresdb
+
+main:
+  persistence:
+    enabled: true
+    size: 2Gi
+  resources:
+    requests:
+      memory: "250Mi"
+    limits:
+      memory: "500Mi"
+
+postgresql:
+  enabled: true
+  auth:
+    database: n8n
+    username: n8n
+    password: n8n
+  primary:
+    persistence:
+      size: 10Gi
