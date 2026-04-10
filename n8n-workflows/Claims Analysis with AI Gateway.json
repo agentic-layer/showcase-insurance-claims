@@ -10,46 +10,21 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -1040,
-        -544
+        0,
+        0
       ],
-      "id": "e58e6fea-d64e-45f4-a341-35b50372ba19",
+      "id": "7a952147-dc20-455c-885c-2e995b4eb6e2",
       "name": "Phone call finished",
       "webhookId": "d6f63bbc-b4d1-4251-b741-5dd262ce3d02",
       "notes": "Dieser Node wartet auf eingehende POST-Anfragen an die generierte URL. Die im Body der Anfrage gesendeten Daten (z.B. die id des Transkripts) stehen dann im Workflow für die nächsten Schritte zur Verfügung."
     },
     {
       "parameters": {
-        "model": {
-          "__rl": true,
-          "value": "gpt-5-mini",
-          "mode": "list",
-          "cachedResultName": "gpt-5-mini"
-        },
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1.2,
-      "position": [
-        816,
-        208
-      ],
-      "id": "16d2be3b-9a5b-46b6-94f9-1f8120437bfc",
-      "name": "OpenAI Chat Model",
-      "credentials": {
-        "openAiApi": {
-          "id": "pZDjxZ49j5kDoL04",
-          "name": "AI Gateway"
-        }
-      }
-    },
-    {
-      "parameters": {
         "modelId": {
           "__rl": true,
-          "value": "gpt-5-mini",
+          "value": "gemini-3.1-flash-lite-preview",
           "mode": "list",
-          "cachedResultName": "GPT-5-MINI"
+          "cachedResultName": "GEMINI-3.1-FLASH-LITE-PREVIEW"
         },
         "messages": {
           "values": [
@@ -68,48 +43,17 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        -656,
-        -544
+        384,
+        0
       ],
-      "id": "28af5279-148c-4ec4-a147-071b71552d78",
+      "id": "091170bf-d56e-4380-9788-e59e27dd8aca",
       "name": "Claims Analysis (Simple node)",
       "credentials": {
         "openAiApi": {
-          "id": "pZDjxZ49j5kDoL04",
+          "id": "JipGV10YHHMciVG3",
           "name": "AI Gateway"
         }
       }
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=Hier ist das zu analysierende Transkript:\n{{ $json.body.conversation_flow.full_conversation }}\n\n",
-        "options": {
-          "systemMessage": "    ANALYSE-REGELN:\n    Analysiere das folgende Transkript sorgfältig.\n    Extrahiere NUR die Informationen für die unten im JSON-Format vorgegebenen Felder.\n    Wenn eine Information nicht explizit im Transkript erwähnt wird, setze den Wert für das entsprechende Feld auf null. Erfinde keine Daten.\n    Formatiere Datums- und Zeitangaben streng im ISO 8601 Format (YYYY-MM-DDTHH:MM:SSZ). Wenn nur ein Datum genannt wird, verwende Mitternacht als Zeit (YYYY-MM-DDT00:00:00Z).\n    Fasse die Beschreibung des Vorfalls (incident_description) in 2-3 neutralen, klaren Sätzen zusammen.\n    Ermittle bodily_injury (Personenschaden) als true, wenn Verletzungen erwähnt werden, sonst false.\n    Extrahiere strukturierte Daten für accident_location und driver als JSON-Objekte, wie unten gezeigt.\n    Ergänze das Feld accident_location.zip_code automatisch, wenn Straße und Stadt vorhanden sind, indem du eine Adressuche für deutsche Adressen durchführst.\n    \n    Extrahiere das Kfz-Kennzeichen als vehicle_id und wandle es in das deutsche Standardformat für Kennzeichen um (z.B. „M AB 1234“: Stadt-/Kreis-Kürzel, 1-2 Buchstaben, 1-4 Ziffern, alles mit Leerzeichen getrennt). \n    Entferne Sonderzeichen und formatiere alles korrekt.\n    Gib keine Erklärung oder einleitenden Text aus. Deine Antwort muss direkt mit { beginnen und mit } enden.\n    Material damage (material_damage) bezieht sich ausschließlich auf explizit genannte Sachschäden am Fahrzeug (z.B. „Stoßstange eingedellt“, „Kotflügel beschädigt“, „Lack zerkratzt“).\n    Falls mehrere Schäden genannt werden, fasse sie prägnant zusammen, z.B.: \"linker Kotflügel eingedrückt, Scheinwerfer beschädigt\".\n    \n    Kundendaten wie die customer_id und die policy_id sind über das Tool \"get_user_data\" abrufbar.\n    Falls diese Daten im Transkript nicht erwähnt werden, rufe das Tool auf, um die fehlenden Informationen zu erhalten.\n    \n    GEWÜNSCHTES AUSGABEFORMAT (JSON):\n    {\n      \"claim_number\": \"string oder null\",\n      \"customer_id\": \"string oder null\",\n      \"policy_id\": \"string oder null\",\n      \"incident_date\": \"YYYY-MM-DDTHH:MM:SSZ oder null\",\n      \"incident_description\": \"string\",\n      \"bodily_injury\": \"boolean\",\n      \"accident_location\": {\n        \"street\": \"string oder null\",\n        \"city\": \"string oder null\",\n        \"zip_code\": \"string oder null\",\n        \"country\": \"string oder null\"\n      },\n      \"accident_date\": \"YYYY-MM-DDTHH:MM:SSZ oder null\",\n      \"material_damage\": \"string oder null\",\n      \"driver\": {\n        \"first_name\": \"string oder null\",\n        \"last_name\": \"string oder null\"\n      },\n      \"vehicle_id\": \"string oder null\"\n    }"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3,
-      "position": [
-        816,
-        -96
-      ],
-      "id": "b3c5b816-cac2-4856-ae4e-8724f0e7e117",
-      "name": "Claims Analysis"
-    },
-    {
-      "parameters": {
-        "endpointUrl": "http://localhost:12020/mcp",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
-      "typeVersion": 1.2,
-      "position": [
-        960,
-        208
-      ],
-      "id": "470440b5-796f-4c15-95a2-3f68c14291eb",
-      "name": "MCP Client"
     },
     {
       "parameters": {
@@ -128,24 +72,24 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        32,
-        -544
+        1072,
+        0
       ],
-      "id": "f1f8847e-35af-4333-b9b7-44637858c6d5",
+      "id": "3f58c2ab-5ba6-428e-a73b-fa67dcfd90a3",
       "name": "Store claim data"
     },
     {
       "parameters": {
-        "endpointUrl": "http://localhost:12020/mcp",
+        "endpointUrl": "http://tool-gateway.tool-gateway/showcase-insurance-claims/mcp",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
       "typeVersion": 1.2,
       "position": [
-        -512,
-        -304
+        528,
+        240
       ],
-      "id": "aa5e2b47-273a-42ce-90dc-23b2d908c5fe",
+      "id": "52661ba4-2b64-40cd-9bc4-977ed21a947e",
       "name": "MCP Client - Customer DB"
     }
   ],
@@ -560,39 +504,12 @@
         ]
       ]
     },
-    "OpenAI Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Claims Analysis",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Claims Analysis (Simple node)": {
       "main": [
         [
           {
             "node": "Store claim data",
             "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Claims Analysis": {
-      "main": [
-        []
-      ]
-    },
-    "MCP Client": {
-      "ai_tool": [
-        [
-          {
-            "node": "Claims Analysis",
-            "type": "ai_tool",
             "index": 0
           }
         ]
@@ -612,13 +529,14 @@
   },
   "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate"
   },
-  "versionId": "cf6056bb-b9dd-4098-8726-bb4faf6e272b",
+  "versionId": "290d4399-8112-4b0c-8bd9-02e939f11d97",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "5e9abefdcd5a4b9024ca9287ddea48e94f6d3e20694f7b18d087e54a3d9ca807"
+    "instanceId": "20dd6f28a31172ea469a9103496b6d938b646283d5d8922ec5c69dfe6d5f3849"
   },
-  "id": "Dgqct98Dhqd1yMfE",
+  "id": "U01eqckHHnPkpfca",
   "tags": []
 }

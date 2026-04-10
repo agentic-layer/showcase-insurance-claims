@@ -1,5 +1,5 @@
 {
-  "name": "Claims Analysis with Agent Gateway / OpenAI API",
+  "name": "Claims Analysis with AI Gateway and AI Agent",
   "nodes": [
     {
       "parameters": {
@@ -10,27 +10,54 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -128,
-        272
+        0,
+        0
       ],
-      "id": "362192af-b7fb-454e-89f6-e6c2ddf4e817",
+      "id": "cc281393-c047-4529-879c-bcab94cb74f0",
       "name": "Phone call finished",
       "webhookId": "d6f63bbc-b4d1-4251-b741-5dd262ce3d02",
       "notes": "Dieser Node wartet auf eingehende POST-Anfragen an die generierte URL. Die im Body der Anfrage gesendeten Daten (z.B. die id des Transkripts) stehen dann im Workflow für die nächsten Schritte zur Verfügung."
     },
     {
       "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gemini-3.1-flash-lite-preview",
+          "mode": "list",
+          "cachedResultName": "gemini-3.1-flash-lite-preview"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        480,
+        304
+      ],
+      "id": "a6fa63d7-aaba-423f-90ad-0da13ac3e918",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "sGoiFXxEfpWKC4B2",
+          "name": "AI Gateway"
+        }
+      }
+    },
+    {
+      "parameters": {
         "promptType": "define",
         "text": "=Hier ist das zu analysierende Transkript:\n{{ $json.body.conversation_flow.full_conversation }}\n\n",
-        "options": {}
+        "options": {
+          "systemMessage": "    ANALYSE-REGELN:\n    Analysiere das folgende Transkript sorgfältig.\n    Extrahiere NUR die Informationen für die unten im JSON-Format vorgegebenen Felder.\n    Wenn eine Information nicht explizit im Transkript erwähnt wird, setze den Wert für das entsprechende Feld auf null. Erfinde keine Daten.\n    Formatiere Datums- und Zeitangaben streng im ISO 8601 Format (YYYY-MM-DDTHH:MM:SSZ). Wenn nur ein Datum genannt wird, verwende Mitternacht als Zeit (YYYY-MM-DDT00:00:00Z).\n    Fasse die Beschreibung des Vorfalls (incident_description) in 2-3 neutralen, klaren Sätzen zusammen.\n    Ermittle bodily_injury (Personenschaden) als true, wenn Verletzungen erwähnt werden, sonst false.\n    Extrahiere strukturierte Daten für accident_location und driver als JSON-Objekte, wie unten gezeigt.\n    Ergänze das Feld accident_location.zip_code automatisch, wenn Straße und Stadt vorhanden sind, indem du eine Adressuche für deutsche Adressen durchführst.\n    \n    Extrahiere das Kfz-Kennzeichen als vehicle_id und wandle es in das deutsche Standardformat für Kennzeichen um (z.B. „M AB 1234“: Stadt-/Kreis-Kürzel, 1-2 Buchstaben, 1-4 Ziffern, alles mit Leerzeichen getrennt). \n    Entferne Sonderzeichen und formatiere alles korrekt.\n    Gib keine Erklärung oder einleitenden Text aus. Deine Antwort muss direkt mit { beginnen und mit } enden.\n    Material damage (material_damage) bezieht sich ausschließlich auf explizit genannte Sachschäden am Fahrzeug (z.B. „Stoßstange eingedellt“, „Kotflügel beschädigt“, „Lack zerkratzt“).\n    Falls mehrere Schäden genannt werden, fasse sie prägnant zusammen, z.B.: \"linker Kotflügel eingedrückt, Scheinwerfer beschädigt\".\n    \n    Kundendaten wie die customer_id und die policy_id sind über das Tool \"get_user_data\" abrufbar.\n    Falls diese Daten im Transkript nicht erwähnt werden, rufe das Tool auf, um die fehlenden Informationen zu erhalten.\n    \n    GEWÜNSCHTES AUSGABEFORMAT (JSON):\n    {\n      \"claim_number\": \"string oder null\",\n      \"customer_id\": \"string oder null\",\n      \"policy_id\": \"string oder null\",\n      \"incident_date\": \"YYYY-MM-DDTHH:MM:SSZ oder null\",\n      \"incident_description\": \"string\",\n      \"bodily_injury\": \"boolean\",\n      \"accident_location\": {\n        \"street\": \"string oder null\",\n        \"city\": \"string oder null\",\n        \"zip_code\": \"string oder null\",\n        \"country\": \"string oder null\"\n      },\n      \"accident_date\": \"YYYY-MM-DDTHH:MM:SSZ oder null\",\n      \"material_damage\": \"string oder null\",\n      \"driver\": {\n        \"first_name\": \"string oder null\",\n        \"last_name\": \"string oder null\"\n      },\n      \"vehicle_id\": \"string oder null\"\n    }"
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3,
       "position": [
-        352,
-        272
+        480,
+        0
       ],
-      "id": "e5426ff1-d043-4aab-84c6-02224796dc93",
+      "id": "70517698-6063-4bcb-9aa1-98d113bd16cc",
       "name": "Claims Analysis"
     },
     {
@@ -50,36 +77,25 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        944,
-        272
+        1072,
+        0
       ],
-      "id": "c7174a1d-5df3-45f8-945f-ac4564d596bc",
+      "id": "6ae81940-004a-4332-ad16-6c50b211fabe",
       "name": "Store claim data"
     },
     {
       "parameters": {
-        "model": {
-          "__rl": true,
-          "value": "showcase-insurance-claims/claims-analysis-agent",
-          "mode": "list",
-          "cachedResultName": "showcase-insurance-claims/claims-analysis-agent"
-        },
+        "endpointUrl": "http://tool-gateway.tool-gateway/showcase-insurance-claims/mcp",
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
       "typeVersion": 1.2,
       "position": [
-        352,
-        576
+        624,
+        304
       ],
-      "id": "b71736c2-beda-4aab-b867-b81bff2d1458",
-      "name": "Claims Analysis Agent",
-      "credentials": {
-        "openAiApi": {
-          "id": "zoJl5AFj5pf0nYeO",
-          "name": "Agent Gateway"
-        }
-      }
+      "id": "099f0eb4-93c9-4d29-9918-2886f867e343",
+      "name": "MCP Client - Customer DB"
     }
   ],
   "pinData": {
@@ -493,23 +509,34 @@
         ]
       ]
     },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Claims Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client - Customer DB": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claims Analysis",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Claims Analysis": {
       "main": [
         [
           {
             "node": "Store claim data",
             "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Claims Analysis Agent": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Claims Analysis",
-            "type": "ai_languageModel",
             "index": 0
           }
         ]
@@ -521,11 +548,11 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "a6745eab-a60d-4a1b-818d-55370eee7c6b",
+  "versionId": "697fa63c-727b-48c6-880f-05f213c0a636",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "20dd6f28a31172ea469a9103496b6d938b646283d5d8922ec5c69dfe6d5f3849"
+    "instanceId": "a60ca372e9f1b17b8e8af0ecff9c651a51a6367ee86ff42a5b6778282cbfb673"
   },
-  "id": "YHMnLu7mXNp3sX7o",
+  "id": "ZYmgQ7Z95IbfkVmZ",
   "tags": []
 }

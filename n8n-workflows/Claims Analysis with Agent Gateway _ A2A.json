@@ -13,7 +13,7 @@
         0,
         0
       ],
-      "id": "e6a17c9d-53e5-42ff-be20-4bdab32c8d24",
+      "id": "5c000278-4049-4ae4-bc53-4c87953a6a54",
       "name": "Phone call finished",
       "webhookId": "e509ca9b-eb4f-4fe2-a3ee-4e314289c20e",
       "notes": "Dieser Node wartet auf eingehende POST-Anfragen an die generierte URL. Die im Body der Anfrage gesendeten Daten (z.B. die id des Transkripts) stehen dann im Workflow für die nächsten Schritte zur Verfügung."
@@ -38,7 +38,7 @@
         848,
         0
       ],
-      "id": "fecb2eb7-1170-4aa0-b29c-1ef5220143dc",
+      "id": "d32f66b2-9c15-4c7e-ab7d-86998bed8a8f",
       "name": "Store claim data"
     },
     {
@@ -51,12 +51,12 @@
         416,
         0
       ],
-      "id": "838fbab7-960c-4c1d-998e-ed07f77f02a3",
+      "id": "caf6caf5-11ec-41fa-af23-3f0f4369838b",
       "name": "Claims Analysis (A2A)",
       "credentials": {
         "a2aApi": {
-          "id": "0aQUkB9uYdny20te",
-          "name": "A2A account"
+          "id": "k7lkVgDbZtGahL5x",
+          "name": "Claims Analysis Agent via Agent Gateway"
         }
       }
     }
@@ -461,11 +461,6 @@
     ]
   },
   "connections": {
-    "Store claim data": {
-      "main": [
-        []
-      ]
-    },
     "Phone call finished": {
       "main": [
         [
@@ -491,13 +486,14 @@
   },
   "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate"
   },
-  "versionId": "790d96e9-8587-4b7f-abeb-8e7388a372e2",
+  "versionId": "71587b3a-5b8c-4ece-8ed0-98a7da364a40",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "05fa260ba9cc8144fd55482b753daedf7421cc39a8a4c53f7269d0362c04785f"
+    "instanceId": "20dd6f28a31172ea469a9103496b6d938b646283d5d8922ec5c69dfe6d5f3849"
   },
-  "id": "saBUtOZOKDHZVkMU",
+  "id": "gJxZW5HeG4IbM8WF",
   "tags": []
 }
