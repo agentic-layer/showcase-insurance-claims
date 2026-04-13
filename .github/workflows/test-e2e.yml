@@ -40,6 +40,7 @@ jobs:
           ./scripts/test-claims-agent.sh all
 
       - name: Logs
+        if: always()
         run: |
           echo ""
           echo "Kubernetes Pod Statuses:"
@@ -55,6 +56,4 @@ jobs:
 
           echo ""
           echo "Agent Logs:"
-          kubectl logs -n showcase-cross-selling -l app=insurance-host-agent || true
-          kubectl logs -n showcase-cross-selling -l app=communications-agent || true
-          kubectl logs -n showcase-cross-selling -l app=cross-selling-agent || true
+          kubectl logs -n showcase-insurance-claims -l app=analysis-agent || true
