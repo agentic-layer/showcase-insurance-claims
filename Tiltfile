@@ -1,4 +1,4 @@
-update_settings(max_parallel_updates=2, k8s_upsert_timeout_secs=600)
+update_settings(max_parallel_updates=10, k8s_upsert_timeout_secs=600)
 
 # Define profiles for optional components (e.g. `tilt up -- --profile n8n --profile librechat`)
 config.define_string_list("profile")
