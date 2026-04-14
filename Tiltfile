@@ -11,7 +11,7 @@ dotenv()
 
 load('ext://helm_remote', 'helm_remote')
 
-v1alpha1.extension_repo(name='agentic-layer', url='https://github.com/agentic-layer/tilt-extensions', ref='v0.14.0')
+v1alpha1.extension_repo(name='agentic-layer', url='https://github.com/agentic-layer/tilt-extensions', ref='v0.15.1')
 
 v1alpha1.extension(name='cert-manager', repo_name='agentic-layer', repo_path='cert-manager')
 load('ext://cert-manager', 'cert_manager_install')
@@ -31,7 +31,7 @@ agent_gateway_krakend_install(version='0.6.6', instance=False)
 
 v1alpha1.extension(name='tool-gateway-agentgateway', repo_name='agentic-layer', repo_path='tool-gateway-agentgateway')
 load('ext://tool-gateway-agentgateway', 'tool_gateway_agentgateway_install')
-tool_gateway_agentgateway_install(version='0.2.3', instance=False, agentgateway_version='1.0.1')
+tool_gateway_agentgateway_install(version='0.2.3', instance=False)
 
 # Override Agent resource to use image from spec.image field
 # As a consequence, all agents have to specify the image field.
