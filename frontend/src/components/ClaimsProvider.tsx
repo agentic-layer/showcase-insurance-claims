@@ -1,77 +1,15 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatBerlinTime, formatBerlinLocalTime, formatBirthDate } from '@/lib/dateUtils';
-
-interface AccidentLocation {
-  street?: string;
-  house_number?: string;
-  zip_code?: string;
-  postal_code?: string;
-  city?: string;
-  remarks?: string;
-  country?: string;
-}
-
-interface DriverInfo {
-  first_name?: string;
-  last_name?: string;
-  relation_to_policy_holder?: string;
-}
-
-interface AdditionalClaimData {
-  transcript_summary?: string;
-  material_damage?: string;
-}
-
-interface ClaimData {
-  id: string;
-  kunde: string;
-  geburtsdatum: string;
-  kundennummer: string;
-  kfzKennzeichen: string;
-  unfallzeit: string;
-  unfallort: string;
-  fahrer: string;
-  personenschaden: string;
-  schadenmeldung: string;
-  schadennummer: string;
-  sentiment: string;
-  zusammenfassung: string;
-  schaden: string;
-}
-
-interface ClaimSummary {
-  id: string;
-  created_at: string;
-  first_name: string;
-  last_name: string;
-  claim_number: string;
-}
-
-interface ClaimsContextType {
-  availableClaims: ClaimSummary[];
-  selectedClaimId: string | null;
-  selectedClaimData: ClaimData | null;
-  isLoading: boolean;
-  setSelectedClaimId: (id: string) => void;
-}
-
-const ClaimsContext = createContext<ClaimsContextType>({
-  availableClaims: [],
-  selectedClaimId: null,
-  selectedClaimData: null,
-  isLoading: true,
-  setSelectedClaimId: () => {},
-});
-
-export const useClaims = () => {
-  const context = useContext(ClaimsContext);
-  if (!context) {
-    throw new Error('useClaims must be used within a ClaimsProvider');
-  }
-  return context;
-};
+import {
+  ClaimsContext,
+  type AccidentLocation,
+  type AdditionalClaimData,
+  type ClaimData,
+  type ClaimSummary,
+  type DriverInfo,
+} from './claims-context';
 
 interface ClaimsProviderProps {
   children: React.ReactNode;
@@ -309,12 +247,14 @@ export const ClaimsProvider: React.FC<ClaimsProviderProps> = ({ children }) => {
 
   // Fetch available claims on mount
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetch; state updates occur after awaits
     fetchAvailableClaims();
   }, [fetchAvailableClaims]);
 
   // Fetch claim data when selected claim changes
   useEffect(() => {
     if (selectedClaimId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetch; state updates occur after awaits
       fetchClaimData(selectedClaimId);
     }
   }, [selectedClaimId, fetchClaimData]);
