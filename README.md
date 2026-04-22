@@ -68,11 +68,7 @@ This showcase demonstrates the core capabilities of the Agentic Layer platform:
 
 The following tools and dependencies are required:
 
-- **Python 3.13+**: For agents and MCP servers
-- **Node.js 22+**: For frontend development
-- **Google Cloud SDK**: For ADK and Gemini API integration
-- **uv 0.5.0+**: Python package manager
-- **Tilt**: Kubernetes development environment orchestration
+- **[mise](https://mise.jdx.dev/)**: Dev tool manager — installs Python, Node.js, uv, go-task, pre-commit, tilt, jq, helm, and kustomize
 - **Docker Desktop**: With Kubernetes enabled
 - **Google Gemini API Key**: For AI model access
 
@@ -83,8 +79,8 @@ The following tools and dependencies are required:
 ### 1. Install Dependencies
 
 ```bash
-# Install system dependencies via Homebrew
-brew bundle
+# Install all development tools via mise (Python, Node.js, uv, go-task, pre-commit, tilt, jq, helm, kustomize)
+mise install
 ```
 
 ### 2. Environment Configuration
