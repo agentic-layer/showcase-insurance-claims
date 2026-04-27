@@ -268,7 +268,7 @@ Use the custom WebSocket frontend at http://localhost:12030 to interact with the
 
 ### Agentic Layer Components
 
-- **Agent Runtime** (`agent-runtime`): Core Kubernetes operator managing Agent, ToolServer, and AgenticWorkforce
+- **Agent Runtime** (`agent-runtime`): Core Kubernetes operator managing Agent, ToolServer, ToolRoute, and AgenticWorkforce
   CRDs
 - **AI Gateway** (`ai-gateway`): Unified LLM access via LiteLLM supporting multiple
   providers
