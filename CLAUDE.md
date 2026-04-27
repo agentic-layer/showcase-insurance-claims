@@ -94,7 +94,7 @@ npm run build:dev        # Development
 ### Agent Types
 
 **1. claims-analysis-agent** (Template-based Agent)
-- Defined purely as Kubernetes CRD in `deploy/base/claims-analysis-agent.yaml`
+- Defined purely as a Kubernetes CRD in `chart/templates/analysis-agent.yaml`
 - Uses pre-built ADK image: `ghcr.io/agentic-layer/agent-template-adk`
 - Text-based agent for analyzing insurance claim transcripts
 - Exposed via Agent Gateway (OpenAI API + A2A protocol)
@@ -119,37 +119,39 @@ npm run build:dev        # Development
 ### Agentic Layer Platform Components
 
 The showcase integrates with Agentic Layer platform components:
-- **Agent Runtime**: Kubernetes operator managing Agent, ToolServer, and AgenticWorkforce CRDs
+- **Agent Runtime**: Kubernetes operator managing Agent, ToolServer, ToolRoute, and AgenticWorkforce CRDs
 - **AI Gateway (LiteLLM)**: Unified LLM access supporting multiple providers
 - **Agent Gateway**: OpenAI-compatible REST API and A2A protocol for agents
 - **Observability**: LGTM stack (Loki, Grafana, Tempo, Mimir) with OpenTelemetry
 
 ### Deployment Structure
 
-- `deploy/base/`: Kubernetes CRDs for agents, MCP servers, and workforce
-  - Agent definitions (YAML only for claims-analysis-agent)
-  - ToolServer definitions for MCP servers
-  - AgenticWorkforce definition
-- `deploy/local/`: Local development overlays and configurations
-  - LibreChat configuration
-  - n8n setup
-  - Observability dashboard
-  - Agentic Layer component configurations
-- `Tiltfile`: Orchestrates all services, Docker builds, and port forwarding
+- `chart/`: Helm chart with all showcase Kubernetes resources
+  - `chart/templates/analysis-agent.yaml`: claims-analysis-agent CRD
+  - `chart/templates/voice-agent.yaml`: claims-voice-agent CRD
+  - `chart/templates/customer-database.yaml`: customer-database ToolServer + ToolRoute CRDs
+  - `chart/templates/workforce.yaml`: AgenticWorkforce CRD
+  - `chart/templates/frontend-deployment.yaml` / `frontend-service.yaml`: Frontend Deployment and Service
+  - `chart/values.yaml`: Default chart values (image tags, log level, toolGateway ref, etc.)
+- `deploy/local/`: Local development overlays and configurations applied via Kustomize
+  - Agentic Layer component instances (AgentGateway, AiGateway, ToolGateway)
+  - Observability stack (LGTM)
+  - n8n namespace and values
+- `Tiltfile`: Orchestrates all services, Docker builds, port forwarding, and installs Agentic Layer extensions
 
 ### AgenticWorkforce CRD
 
-The `insurance-claims-workforce` (`deploy/base/insurance-claims-workforce.yaml`) groups agents together as a logical workforce with `claims-analysis-agent` as the entry point.
+The `insurance-claims-workforce` (`chart/templates/workforce.yaml`) groups agents together as a logical workforce with `claims-analysis-agent` as the entry point.
 
 ## Important Development Notes
 
 ### Modifying Agents
 
 **For claims-analysis-agent:**
-- Edit the CRD in `deploy/base/claims-analysis-agent.yaml`
+- Edit the CRD in `chart/templates/analysis-agent.yaml`
 - Modify the `instruction` field to change agent behavior
 - Change the `model` field to use different LLMs (via AI Gateway)
-- Update `tools` section to add/remove MCP server connections
+- Update `tools` section to add/remove MCP server connections (each entry references a ToolRoute via `upstream.toolRouteRef`)
 - Tilt will automatically detect changes and redeploy
 
 **For claims-voice-agent:**
@@ -165,7 +167,7 @@ The `insurance-claims-workforce` (`deploy/base/insurance-claims-workforce.yaml`)
 - Main entry point: `main.py`
 - Mock data: `mock_database.py`
 - Run `make check` before committing
-- Update ToolServer CRD in `deploy/base/customer-database.yaml` if changing exposed tools
+- Update the ToolServer/ToolRoute CRDs in `chart/templates/customer-database.yaml` if changing exposed tools
 
 ### Pre-commit Hooks
 

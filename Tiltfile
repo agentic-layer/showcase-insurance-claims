@@ -19,7 +19,7 @@ cert_manager_install()
 
 v1alpha1.extension(name='agent-runtime', repo_name='agentic-layer', repo_path='agent-runtime')
 load('ext://agent-runtime', 'agent_runtime_install')
-agent_runtime_install(version='0.27.1')
+agent_runtime_install(version='0.28.0-rc.2')
 
 v1alpha1.extension(name='ai-gateway-litellm', repo_name='agentic-layer', repo_path='ai-gateway-litellm')
 load('ext://ai-gateway-litellm', 'ai_gateway_litellm_install')
@@ -31,7 +31,7 @@ agent_gateway_krakend_install(version='0.6.6', instance=False)
 
 v1alpha1.extension(name='tool-gateway-agentgateway', repo_name='agentic-layer', repo_path='tool-gateway-agentgateway')
 load('ext://tool-gateway-agentgateway', 'tool_gateway_agentgateway_install')
-tool_gateway_agentgateway_install(version='0.2.4', instance=False)
+tool_gateway_agentgateway_install(version='0.3.0-rc.2', instance=False)
 
 # Override Agent resource to use image from spec.image field
 # As a consequence, all agents have to specify the image field.
@@ -74,11 +74,12 @@ k8s_yaml(kustomize('deploy/local'))
 
 # Showcase Components
 k8s_resource('insurance-claims-workforce', labels=['showcase'], resource_deps=['agent-runtime'], pod_readiness='ignore')
-k8s_resource('claims-analysis-agent', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database'],
+k8s_resource('claims-analysis-agent', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database:toolserver'],
              port_forwards=['12011:8000'])
-k8s_resource('claims-voice-agent', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database'],
+k8s_resource('claims-voice-agent', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database:toolserver'],
              port_forwards=['12010:8000'])
-k8s_resource('customer-database', labels=['showcase'], resource_deps=['agent-runtime'], port_forwards=['12020:8000'])
+k8s_resource('customer-database:toolserver', labels=['showcase'], resource_deps=['agent-runtime'], port_forwards=['12020:8000'])
+k8s_resource('customer-database:toolroute', labels=['showcase'], resource_deps=['agent-runtime'])
 k8s_resource('showcase-claims-frontend', labels=['showcase'], resource_deps=['claims-voice-agent'],
              port_forwards=['12030:80'])
 
