@@ -74,12 +74,12 @@ k8s_yaml(kustomize('deploy/local'))
 
 # Showcase Components
 k8s_resource('insurance-claims-workforce', labels=['showcase'], resource_deps=['agent-runtime'], pod_readiness='ignore')
-k8s_resource('claims-analysis-agent', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database:toolserver', 'customer-database:toolroute'],
+k8s_resource('claims-analysis-agent', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database:toolroute'],
              port_forwards=['12011:8000'])
-k8s_resource('claims-voice-agent', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database:toolserver'],
+k8s_resource('claims-voice-agent', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database:toolroute'],
              port_forwards=['12010:8000'])
 k8s_resource('customer-database:toolserver', labels=['showcase'], resource_deps=['agent-runtime'], port_forwards=['12020:8000'])
-k8s_resource('customer-database:toolroute', labels=['showcase'], resource_deps=['agent-runtime'])
+k8s_resource('customer-database:toolroute', labels=['showcase'], resource_deps=['agent-runtime', 'customer-database:toolserver'])
 k8s_resource('showcase-claims-frontend', labels=['showcase'], resource_deps=['claims-voice-agent'],
              port_forwards=['12030:80'])
 
