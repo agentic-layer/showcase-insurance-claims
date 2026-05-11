@@ -31,7 +31,7 @@ agent_gateway_krakend_install(version='0.7.0', instance=False)
 
 v1alpha1.extension(name='tool-gateway-agentgateway', repo_name='agentic-layer', repo_path='tool-gateway-agentgateway')
 load('ext://tool-gateway-agentgateway', 'tool_gateway_agentgateway_install')
-tool_gateway_agentgateway_install(version='0.4.0', instance=False)
+tool_gateway_agentgateway_install(version='0.5.0', instance=False)
 
 # Override Agent resource to use image from spec.image field
 # As a consequence, all agents have to specify the image field.
