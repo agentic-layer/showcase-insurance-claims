@@ -22,7 +22,7 @@
       "parameters": {
         "modelId": {
           "__rl": true,
-          "value": "gemini-3.1-flash-lite-preview",
+          "value": "gemini-3.1-flash-lite",
           "mode": "list",
           "cachedResultName": "GEMINI-3.1-FLASH-LITE-PREVIEW"
         },
