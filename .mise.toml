@@ -1,6 +1,6 @@
 [tools]
 python = "3.14.6"
 node = "24"
-uv = "0.11.23"
+uv = "0.11.25"
 pre-commit = "4.6.0"
 tilt = "0.37.4"
